@@ -2,6 +2,14 @@
   "name": "gazelle",
   "version": "0.0.0",
   "dependencies": {
-    "puppeteer": "^5.2.1"
+    "express": "^4.17.1",
+    "jszip": "^3.5.0",
+    "puppeteer": "^5.2.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   }
 }

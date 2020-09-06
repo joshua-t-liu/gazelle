@@ -10,12 +10,12 @@ const pullPrice = async function(page, links) {
 
   if (!deviceLinks) {
     deviceLinks = [];
-    let devices = await fsPromises.readFile('./results/devices.csv', { encoding: 'utf8' });
-    devices = devices.split('\n');
-    devices.forEach((device, idx) => {
-      if (device.length) {
-        deviceLinks.push(device);
-        const phone = createPhone(device);
+    let links = await fsPromises.readFile('./results/devices.csv', { encoding: 'utf8' });
+    links = links.split('\n');
+    links.forEach((link, idx) => {
+      if (link.length) {
+        deviceLinks.push(link);
+        const phone = createPhone(link);
         phones.push(phone);
         const phoneName = phone.phone;
         const carrier = phone.carrier;
@@ -24,12 +24,12 @@ const pullPrice = async function(page, links) {
           if (!unlockedBudget[phoneName]) {
             unlockedBudget[phoneName] = {
               size,
-              device,
+              device: link,
             };
           } else if (size < unlockedBudget[phoneName].size) {
             unlockedBudget[phoneName] = {
               size,
-              device,
+              device: link,
             };
           }
         }
@@ -37,12 +37,15 @@ const pullPrice = async function(page, links) {
     });
   }
 
+  console.log(unlockedBudget);
+
   const results = [];
   const errorWriter = new fs.WriteStream('./results/errors.csv');
 
   for (let i=0; i<deviceLinks.length; i++) {
     if (i % 10 === 0) console.log('status', i / deviceLinks.length)
     await page.goto(deviceLinks[i]);
+
     for (let j=1; j<=3; j++) {
       if (j === 1) {
         await page.click(`div[name="QuestionWithoutResponseScroll"]:nth-of-type(${j}) > div > div > div.option:nth-child(1) > button`);
@@ -50,9 +53,11 @@ const pullPrice = async function(page, links) {
         await page.click(`div[name="QuestionWithoutResponseScroll"]:nth-of-type(${j}) > div > div > div.option:nth-child(2) > button`);
       }
     };
+
     await page.waitFor(1000);
-    let yesVal;
     const { phone, carrier, size } = phones[i];
+
+    let yesVal;
     try {
       yesVal = await page.$eval('span[aria-labelledby="amount"]', (el) => el.innerText);
     } catch (error) {
