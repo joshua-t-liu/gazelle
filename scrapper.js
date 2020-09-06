@@ -37,8 +37,6 @@ const pullPrice = async function(page, links) {
     });
   }
 
-  console.log(unlockedBudget);
-
   const results = [];
   const errorWriter = new fs.WriteStream('./results/errors.csv');
 

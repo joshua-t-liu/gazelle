@@ -12,7 +12,15 @@ const Phone = function(phone, carrier, device, id) {
 };
 
 Phone.prototype.getSize = function() {
-  return parseInt(this.device.substring(this.phone.length + 1, this.device.length - this.carrier.length - 1));
+  const size = this.device.substring(this.phone.length + 1, this.device.length - this.carrier.length - 1);
+  if (parseInt(size) > 0) return parseInte(size);
+  let i = 0;
+  let val = parseInt(size.substr(i));
+  while (isNaN(val) && i < size.length) {
+    i++;
+    val = parseInt(size.substr(i));
+  }
+  return val;
 }
 
 Phone.prototype.stringifyCSV = function() {
