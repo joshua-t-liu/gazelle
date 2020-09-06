@@ -83,23 +83,38 @@ const pullPrice = async function(page, links) {
       }
     };
     await page.waitFor(750);
-    let val;
+    let yesVal;
     const { phone, carrier, size } = phones[i];
     try {
-      val = await page.$eval('span[aria-labelledby="amount"]', (el) => el.innerText);
+      yesVal = await page.$eval('span[aria-labelledby="amount"]', (el) => el.innerText);
     } catch (error) {
       console.log('error', deviceLinks[i], error);
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `${phone}-${carrier}-${size}.jpg` });
+      await page.screenshot({ path: `./pdfs/${phone}-${carrier}-${size}-yes.jpg` });
     }
-    results[i] = [deviceLinks[i], val];
+    
+    let noVal;
+    try {
+      await page.click(`div[name="QuestionWithoutResponseScroll"]:nth-of-type(1) > div > div > div.option:nth-child(2) > button`);
+      await page.waitFor(750);
+      noVal = await page.$eval('span[aria-labelledby="amount"]', (el) => el.innerText);
+    } catch (error) {
+      console.log('error', deviceLinks[i], error);
+      errorWriter.write(deviceLinks[i] + '\n');
+    }
+    if (unlockedBudget[phone].device === deviceLinks[i]) {
+      await page.screenshot({ path: `./pdfs/${phone}-${carrier}-${size}-no.jpg` });
+    }
+
+
+    results[i] = [deviceLinks[i], yesVal, noVal];
   }
 
   errorWriter.end();
   writer = new fs.WriteStream('./results.csv');
-  results.forEach(([link, val], i) => writer.write(phones[i].stringifyCSV() + ',' + val  + '\n'));
+  results.forEach(([link, yesVal, noVal], i) => writer.write(phones[i].stringifyCSV() + ',' + yesVal + ',' + noVal  + '\n'));
   writer.end();
 }
 
