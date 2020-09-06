@@ -1,39 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
-
-const PHONE = 4;
-const CARRIER = 5;
-const DEVICE = 6;
-const ID = 7;
-
-const Phone = function(phone, carrier, device, id) {
-  this.phone = phone;
-  this.carrier = carrier;
-  this.device = device;
-  this.id = id;
-  this.size = this.getSize();
-};
-
-Phone.prototype.getSize = function() {
-  return parseInt(this.device.substring(this.phone.length + 1, this.device.length - this.carrier.length - 1));
-}
-
-Phone.prototype.stringifyCSV = function() {
-  return (
-    this.phone + ',' +
-    this.carrier + ',' +
-    this.device + ',' +
-    this.id
-  );
-}
-
-const createPhone = function(link) {
-  if (typeof link !== 'string') return null;
-  let split = link.split('/');
-  if (split.length !== 8) return null;
-  return new Phone(split[PHONE], split[CARRIER], split[DEVICE], split[ID]);
-};
+const createPhone = require('./Phone.js');
 
 const pullPrice = async function(page, links) {
   let deviceLinks = links;
@@ -42,7 +10,7 @@ const pullPrice = async function(page, links) {
 
   if (!deviceLinks) {
     deviceLinks = [];
-    let devices = await fsPromises.readFile('devices.csv', { encoding: 'utf8' });
+    let devices = await fsPromises.readFile('./results/devices.csv', { encoding: 'utf8' });
     devices = devices.split('\n');
     devices.forEach((device, idx) => {
       if (device.length) {
@@ -70,7 +38,7 @@ const pullPrice = async function(page, links) {
   }
 
   const results = [];
-  const errorWriter = new fs.WriteStream('./errors.csv');
+  const errorWriter = new fs.WriteStream('./results/errors.csv');
 
   for (let i=0; i<deviceLinks.length; i++) {
     if (i % 10 === 0) console.log('status', i / deviceLinks.length)
@@ -82,7 +50,7 @@ const pullPrice = async function(page, links) {
         await page.click(`div[name="QuestionWithoutResponseScroll"]:nth-of-type(${j}) > div > div > div.option:nth-child(2) > button`);
       }
     };
-    await page.waitFor(750);
+    await page.waitFor(1000);
     let yesVal;
     const { phone, carrier, size } = phones[i];
     try {
@@ -92,28 +60,27 @@ const pullPrice = async function(page, links) {
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `./pdfs/${phone}-${carrier}-${size}-yes.jpg` });
+      await page.screenshot({ path: `./images/${phone}-${carrier}-${size}-yes.jpg` });
     }
-    
+
     let noVal;
     try {
       await page.click(`div[name="QuestionWithoutResponseScroll"]:nth-of-type(1) > div > div > div.option:nth-child(2) > button`);
-      await page.waitFor(750);
+      await page.waitFor(1000);
       noVal = await page.$eval('span[aria-labelledby="amount"]', (el) => el.innerText);
     } catch (error) {
       console.log('error', deviceLinks[i], error);
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `./pdfs/${phone}-${carrier}-${size}-no.jpg` });
+      await page.screenshot({ path: `./images/${phone}-${carrier}-${size}-no.jpg` });
     }
-
 
     results[i] = [deviceLinks[i], yesVal, noVal];
   }
 
   errorWriter.end();
-  writer = new fs.WriteStream('./results.csv');
+  writer = new fs.WriteStream('./results/results.csv');
   results.forEach(([link, yesVal, noVal], i) => writer.write(phones[i].stringifyCSV() + ',' + yesVal + ',' + noVal  + '\n'));
   writer.end();
 }
@@ -153,7 +120,7 @@ const getDeviceLinks = async function (page) {
   deviceLinks = deviceLinks.flat();
   console.log('devices', deviceLinks.length);
 
-  let writer = new fs.WriteStream('./devices.csv');
+  let writer = new fs.WriteStream('./results/devices.csv');
   deviceLinks.forEach((device) => writer.write(device + '\n'));
   writer.end();
 };

@@ -1,0 +1,1 @@
+Creating a dashboard to pull iphone resale price from Gazelle.
