@@ -13,7 +13,7 @@ const Phone = function(phone, carrier, device, id) {
 
 Phone.prototype.getSize = function() {
   const size = this.device.substring(this.phone.length + 1, this.device.length - this.carrier.length - 1);
-  if (parseInt(size) > 0) return parseInte(size);
+  if (parseInt(size) > 0) return parseInt(size);
   let i = 0;
   let val = parseInt(size.substr(i));
   while (isNaN(val) && i < size.length) {
