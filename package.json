@@ -1,9 +1,17 @@
 {
   "name": "gazelle",
   "version": "0.0.0",
+  "scripts": {
+    "build": "npx webpack --watch"
+  },
   "dependencies": {
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.10.4",
+    "babel-loader": "^8.1.0",
+    "chart.js": "^2.9.3",
     "express": "^4.17.1",
     "jszip": "^3.5.0",
+    "pg": "^8.3.3",
     "puppeteer": "^5.2.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"

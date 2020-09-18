@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   mode: "production",
-  entry: "./app/entry",
+  entry: "./client/app.jsx",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
@@ -13,9 +13,15 @@ module.exports = {
         test: /\.jsx?$/,
         loader: "babel-loader",
         options: {
-          presets: ["es2015"]
+          presets: ["@babel/preset-env", "@babel/preset-react"]
         },
       },
     ],
   },
+  resolve: {
+    extensions: ['.js', '.jsx']
+  },
+  // externals: {
+  //   'chart.js': 'chart',
+  // }
 };

@@ -1,16 +1,21 @@
 const express = require('express');
 const JSZip = require("jszip");
+const { getPhoneData } = require('../db');
 
 const app = express();
-const PORT = 3010;
+const PORT = 3100;
 
 const zipScreenshots = function() {
 }
 
-app.use(express.static('./screenshots'));
+app.use(express.static('./dist'));
 
 app.get('/screenshots', (req, res) => {
   res.send();
+});
+
+app.get('/phones', (req, res) => {
+  getPhoneData(res);
 });
 
 app.listen(PORT, () => console.log('listening on port', PORT));

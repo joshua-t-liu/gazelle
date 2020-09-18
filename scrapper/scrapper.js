@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
 const createPhone = require('./Phone.js');
+const { addPhoneData } = require('../db');
 
 const pullPrice = async function(page, links) {
   let deviceLinks = links;
@@ -63,7 +64,7 @@ const pullPrice = async function(page, links) {
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `./images/${phone}-${carrier}-${size}-yes.jpg` });
+      await page.screenshot({ path: `../images/${phone}-${carrier}-${size}-yes.jpg` });
     }
 
     let noVal;
@@ -76,16 +77,23 @@ const pullPrice = async function(page, links) {
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `./images/${phone}-${carrier}-${size}-no.jpg` });
+      await page.screenshot({ path: `../images/${phone}-${carrier}-${size}-no.jpg` });
     }
 
     results[i] = [deviceLinks[i], yesVal, noVal];
   }
 
   errorWriter.end();
+  const res = [];
   writer = new fs.WriteStream('./results/results.csv');
-  results.forEach(([link, yesVal, noVal], i) => writer.write(phones[i].stringifyCSV() + ',' + yesVal + ',' + noVal  + '\n'));
+  results.forEach(([link, yesVal, noVal], i) => {
+    const row = phones[i].stringifyCSV() + ',' + yesVal + ',' + noVal  + '\n';
+    res.push(row);
+    writer.write(row);
+  });
   writer.end();
+
+  addPhoneData(row.join(''));
 }
 
 const getDeviceLinks = async function (page) {
