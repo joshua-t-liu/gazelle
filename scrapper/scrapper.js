@@ -64,7 +64,7 @@ const pullPrice = async function(page, links) {
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `../images/${phone}-${carrier}-${size}-yes.jpg` });
+      await page.screenshot({ path: `./images/${phone}-${carrier}-${size}-yes.jpg` });
     }
 
     let noVal;
@@ -77,7 +77,7 @@ const pullPrice = async function(page, links) {
       errorWriter.write(deviceLinks[i] + '\n');
     }
     if (unlockedBudget[phone].device === deviceLinks[i]) {
-      await page.screenshot({ path: `../images/${phone}-${carrier}-${size}-no.jpg` });
+      await page.screenshot({ path: `./images/${phone}-${carrier}-${size}-no.jpg` });
     }
 
     results[i] = [deviceLinks[i], yesVal, noVal];
