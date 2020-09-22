@@ -19,3 +19,6 @@ Require stack:
   requireStack: [ '/home/ubuntu/gazelle/server/index.js' ]
 }
 listening on port 3010
+listening on port 3100
+listening on port 3100
+listening on port 3100

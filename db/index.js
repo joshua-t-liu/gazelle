@@ -25,6 +25,7 @@ const getPhoneData = (res) => {
 const addPhoneData = (val) => {
   const text = 'INSERT INTO iphones.phones (phone, carrier, model, gpid, price1, price2) VALUES $1;';
   const values = [val.map((row) => `(${row})`).join(',')];
+console.log(values)
   pool
     .query(text.replace('$1', values))
     .then((res) => console.log('complete'))
