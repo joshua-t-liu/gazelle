@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  mode: "production",
+  mode: "development",
   entry: "./client/app.jsx",
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -19,9 +19,14 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    // alias: {
+    //   // ...
+    //   'react-dom$': 'react-dom/profiling',
+    //   'scheduler/tracing': 'scheduler/tracing-profiling',
+    // },
   },
-  // externals: {
-  //   'chart.js': 'chart',
-  // }
+  externals: {
+    'chart.js': 'Chart',
+  }
 };

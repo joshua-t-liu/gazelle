@@ -1,58 +1,60 @@
-import React, { useEffect, useState } from 'react';
-import Graph from './Graph';
-import Filters from './Filters';
+import React from 'react';
+import styled from 'styled-components';
 
-const getModelSize = (model) => {
-  return model.match(/.*([0-9]{2}gb).*/)[1];
-}
+import Logo from './Logo';
+import Spinner from './Spinner';
+import Graph from './Graph';
+import FileCSV from './FileCSV';
+import GraphSelect from './GraphSelect';
+import Variable from './Variable';
+import Filters from './Filters';
+import GroupBy from './GroupBy';
+import useProcessor from './useProcessor';
+import useExample from './useExample';
+
+const App = styled.div`
+  display: flex;
+  font-family: sans-serif;
+  width: 100%;
+`;
 
 export default () => {
-  const [data, setData] = useState([]);
-  const [phones, setPhones] = useState(new Map());
-  const [carriers, setCarriers] = useState(new Map());
-  const [models, setModels] = useState(new Map());
+  const [state, dispatch] = useProcessor();
 
-  useEffect(() => {
-    fetch('/phones')
-    .then((res) => res.json())
-    .then((data) => {
-
-      const phones = new Map();
-      const carriers = new Map();
-      const models = new Map();
-
-      data.phones.forEach(({
-        phone, carrier, model
-      }, index) => {
-        phones.set(phone, true);
-        carriers.set(carrier, true);
-        const size = getModelSize(model);
-        data.phones[index].model = size;
-        models.set(size, true);
-      });
-
-      setData(data.phones);
-      setPhones(phones);
-      setCarriers(carriers);
-      setModels(models);
-
-    });
-  }, []);
+  useExample((payload) => dispatch({ type: 'init', payload }));
 
   return (
-    <div style={{ display: 'flex' }}>
-      <Graph
-        data={data}
-        phones={phones}
-        carriers={carriers}
-        models={models} />
-      <Filters
-        phones={phones}
-        setPhones={setPhones}
-        carriers={carriers}
-        setCarriers={setCarriers}
-        models={models}
-        setModels={setModels} />
-    </div>
+    <App>
+      {/* {isLoading && <Spinner />} */}
+      <div style={{ height: '100%', position: 'sticky', top: '8px', width: 'calc(100% - 350px)' }}>
+        <div>
+          <Logo name='EasyChart' />
+        </div>
+        <Graph
+          graphType={state.graphType}
+          data={state.results}
+          dataType={state.dataType}
+          x={state.x}
+          y={state.y}
+          dispatch={dispatch} />
+      </div>
+      <form style={{ display: 'flex', flexDirection: 'column', width: '350px' }}>
+        <FileCSV dispatch={dispatch} />
+        <GraphSelect
+          graphType={state.graphType}
+          dispatch={dispatch} />
+        <Variable
+          groups={state.groups}
+          x={state.x}
+          y={state.y}
+          dispatch={dispatch} />
+        <Filters
+          filters={state.filters}
+          dispatch={dispatch} />
+        <GroupBy
+          groups={state.groups}
+          dispatch={dispatch} />
+      </form>
+    </App>
   );
 };
