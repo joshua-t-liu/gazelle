@@ -1,4 +1,5 @@
 const express = require('express');
+const compression = require('compression')
 const JSZip = require("jszip");
 const { getPhoneData } = require('../db');
 
@@ -7,6 +8,8 @@ const PORT = 3100;
 
 const zipScreenshots = function() {
 }
+
+app.use(compression());
 
 app.use(express.static('./dist'));
 

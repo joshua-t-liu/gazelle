@@ -7,7 +7,7 @@ fs.readFile('./results/results.csv', 'utf8', (err, data) => {
     addPhoneData(data.trim().split('\n').map((row) => {
       return row.split(',').map((val, idx) => {
         if (idx < 4) return `'${val}'`;
-        return (isNan(Number(val))) ? `'NaN'` : val;
+        return (isNaN(Number(val))) ? `'NaN'` : Number(val);
       }).join(',');
     }));
   }
