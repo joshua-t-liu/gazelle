@@ -7,9 +7,10 @@ const GRAPH_TYPES = {
   'area': 'line',
   'pie': 'pie',
   'bar': 'bar',
+  'doughnut': 'doughnut',
 };
 
-export default ({ graphType, data, dataType, x, y, dispatch }) => {
+export default ({ layoutState, graphType, data, dataType, x, y, dispatch }) => {
   const [chart, setChart] = useState(null);
   const ref = useRef(null);
 
@@ -27,7 +28,7 @@ export default ({ graphType, data, dataType, x, y, dispatch }) => {
         type = 'time';
         break;
       case 'number':
-        type = (graphType === 'bar' || graphType === 'pie') ? 'category' : 'linear';
+        type = (graphType === 'bar' || graphType === 'pie' || graphType === 'doughnut') ? 'category' : 'linear';
         break;
       default:
         type = 'category';
@@ -37,7 +38,7 @@ export default ({ graphType, data, dataType, x, y, dispatch }) => {
     const ctx = ref.current.getContext('2d');
 
     let scales;
-    if (graphType !== 'pie') {
+    if (graphType !== 'pie' && graphType !== 'doughnut') {
       scales = {
         xAxes: [{
           type: type,
@@ -59,7 +60,8 @@ export default ({ graphType, data, dataType, x, y, dispatch }) => {
     }
 
     const legend = {
-      display: (data && data.datasets && (data.datasets.length > 1 || graphType === 'pie')) ? true : false,
+      display: (data && data.datasets &&
+        (data.datasets.length > 1 || graphType === 'pie' || graphType === 'doughnut')) ? true : false,
     };
 
     setChart(new Chart(ctx, {
@@ -70,13 +72,26 @@ export default ({ graphType, data, dataType, x, y, dispatch }) => {
         maintainAspectRatio: false,
         scales,
         layout: {
-          // padding: 8,
+          // padding: 24,
         },
-        legend,
+        title: layoutState.title,
+        legend: Object.assign(layoutState.legend, legend),
       }
     }));
   }, [data])
 
+  useEffect(() => {
+    const legend = {
+      display: (data && data.datasets &&
+        (data.datasets.length > 1 || graphType === 'pie' || graphType === 'doughnut')) ? true : false,
+    };
+
+    if (chart) {
+      chart.options.title = layoutState.title;
+      chart.options.legend = Object.assign(layoutState.legend, legend);
+      chart.update();
+    }
+  }, [layoutState]);
 
   return (
     <div style={{ position: 'relative', height: '80vh', width: 'calc(100% - 2em)', flexShrink: 0, padding: '1em' }}>

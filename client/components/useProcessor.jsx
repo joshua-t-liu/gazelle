@@ -80,7 +80,9 @@ function init(data, type) {
   };
 }
 
-function createDataSet(label, data, index, fill = false, borderWidth) {
+function createDataSet(label, data, index, graphType) {
+  const fill = graphType === 'area';
+  const borderWidth = (graphType === 'bar' || graphType === 'pie' || graphType === 'doughnut') ? 1 : null;
   return ({
     label,
     fill,
@@ -112,12 +114,13 @@ function setMultiColors(dataset) {
   }
 }
 
-function processData(graphType, data, filters, selectedGroup, x, y, dataType) {
-  const datasets = [];
+function processData(state) {
+  const { graphType, data, filters, selectedGroup, x, y, dataType } = state;
+
+  if (!x && !y) return {};
+
   const groups = new Map();
-  const fill = graphType === 'area';
-  const borderWidth = (graphType === 'bar' || graphType === 'pie') ? 1 : null;
-  let labels = new Set();
+  const labels = new Set();
 
   filterData(data, filters, x, y, (record) => {
     const key = Array.from(selectedGroup).map((val) => record[val]).join(',');
@@ -132,9 +135,10 @@ function processData(graphType, data, filters, selectedGroup, x, y, dataType) {
         break;
       case 'bar':
       case 'pie':
+      case 'doughnut':
         if (!groups.get(key)) groups.set(key, new Map());
-        if (groups.get(key).get(record[x]) === undefined) groups.get(key).set(record[x], 0);
-        groups.get(key).set(record[x], groups.get(key).get(record[x]) + (record[y] || 0));
+        const prev =  groups.get(key).get(record[x]) || 0;
+        groups.get(key).set(record[x], prev + (record[y] || 0));
         break;
       case 'bubble':
       case 'radar':
@@ -143,39 +147,55 @@ function processData(graphType, data, filters, selectedGroup, x, y, dataType) {
     }
   });
 
+  const datasets = createDataSets(groups, labels, graphType);
+
+  const sortedLabels = sortDataSets(labels, datasets, dataType[x], graphType);
+
+  return { datasets, labels: sortedLabels };
+}
+
+function createDataSets(groups, labels, graphType) {
+  const datasets = [];
   let index = 0;
+
   groups.forEach((data, label) => {
-    if (graphType === 'bar' || graphType === 'pie') {
-      const updatedData = [];
-      console.log(label)
-
-      labels.forEach((val) => updatedData.push(data.get(val)));
-      datasets.push(createDataSet(label, updatedData, index++, fill, borderWidth));
-
-      if (graphType === 'pie') setMultiColors(datasets[datasets.length - 1]);
-      if (groups.size === 1 && graphType === 'bar') setMultiColors(datasets[0]);
-    } else {
-      datasets.push(createDataSet(label, data, index++, fill));
+    let updatedData = data;
+    switch (graphType) {
+      case 'bar':
+      case 'pie':
+      case 'doughnut':
+        updatedData = Array.from(labels).map((x) => data.get(x));
+      default:
+        datasets.push(createDataSet(label, updatedData, index++, graphType));
+        break;
     }
+    if (graphType === 'pie' || graphType === 'doughnut') setMultiColors(datasets[datasets.length - 1]);
+    if (groups.size === 1 && graphType === 'bar') setMultiColors(datasets[0]);
   });
 
+  return datasets;
+}
+
+function sortDataSets(labels, datasets, dataType, graphType) {
+  let sortedLabels;
   const sortFunc = (dataType === 'number') ? numericalSort : alphabeticalSort;
 
   switch (graphType) {
     case 'line':
     case 'scatter':
     case 'area':
-      labels = Array.from(labels).sort(({ x: x1 }, { x: x2 }) => sortFunc(x1, x2));
+      sortedLabels = Array.from(labels).sort(({ x: x1 }, { x: x2 }) => sortFunc(x1, x2));
       datasets.forEach(({ data }) => data.sort(({ x: x1 }, { x: x2 }) => sortFunc(x1, x2)));
       break;
     case 'bar':
     case 'pie':
+    case 'doughnut':
       labels = Array.from(labels).map((val, idx) => [val, idx]);
       labels.sort(([a, i], [b, j]) => sortFunc(a, b));
       datasets.forEach((dataset) => {
         dataset.data = labels.map(([_, index]) => dataset.data[index]);
       });
-      labels = labels.map(([val, _]) => val);
+      sortedLabels = labels.map(([val, _]) => val);
       break;
     case 'bubble':
     case 'radar':
@@ -183,7 +203,7 @@ function processData(graphType, data, filters, selectedGroup, x, y, dataType) {
       return {};
   }
 
-  return { datasets, labels: Array.from(labels) };
+  return sortedLabels;
 }
 
 function checkFilter(filters, record, col) {
@@ -206,67 +226,48 @@ function filterData(data, filters, x, y, cb) {
 
 function reducer(state, action) {
   const { type, payload } = action;
-  let { graphType, data, dataType, filters, groups, x, y, selectedGroup } = state;
-
-  console.log('start', new Date())
+  let nextState;
 
   switch (type) {
     case 'init':
-      ({
-        graphType = 'line',
-        data,
-        dataType = {},
-        x = null,
-        y = null,
-        selectedGroup = new Set()
-      } = payload);
-      ({ filters, groups } = init(data));
-      selectedGroup.forEach((group) => groups.set(group, true));
+      const { filters, groups } = init(payload.data);
+      nextState = { ...initial(), ...payload, filters, groups };
+      nextState.selectedGroup.forEach((group) => nextState.groups.set(group, true));
       break;
     case 'filters':
-      filters.get(payload.category).set(payload.name, payload.checked);
+      nextState = { ...state };
+      nextState.filters.get(payload.category).set(payload.name, payload.checked);
       break;
     case 'filters-all':
-      const updatedFilters = filters.get(payload.category);
-      updatedFilters.forEach((_, val) => updatedFilters.set(val, payload.checked));
+      nextState = { ...state };
+      const newFilters = nextState.filters.get(payload.category);
+      newFilters.forEach((_, val) => newFilters.set(val, payload.checked));
       break;
     case 'groups':
+      nextState = { ...state };
+      const newGroups = nextState.selectedGroup;
       const group = payload.group;
-      if (selectedGroup.has(group)) {
-        groups.set(group, false);
-        selectedGroup.delete(group);
+      nextState.groups.set(group, !newGroups.has(group));
+      if (newGroups.has(group)) {
+        newGroups.delete(group);
       } else {
-        groups.set(group, true);
-        selectedGroup.add(group);
+        newGroups.add(group);
       }
       break;
     case 'x':
-      x = payload.x;
-      break;
     case 'y':
-      y = payload.y;
-      break;
     case 'graph':
-      graphType = payload.graphType;
+      nextState = { ...state, ...payload }
       break;
     default:
       throw new Error();
   }
 
-  const results = (x && y) ? processData(graphType, data, filters, selectedGroup, x, y, dataType[x]) : [];
-
-  console.log('end', new Date(), results)
+  const results = processData(nextState);
 
   return {
+    ...nextState,
     results,
-    graphType,
-    data,
-    dataType,
-    filters,
-    x,
-    y,
-    groups,
-    selectedGroup,
   }
 }
 

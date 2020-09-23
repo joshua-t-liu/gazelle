@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Header = styled.div`
-  font-weight: bold;
   font-size: 1.25em;
   border-bottom: solid 0.1em;
 `;

@@ -16,8 +16,12 @@ const TYPES = [
     type: 'area',
   },
   {
-    title: 'Pie (Doughnut)',
+    title: 'Pie',
     type: 'pie',
+  },
+  {
+    title: 'Doughnut',
+    type: 'doughnut',
   },
   {
     title: 'Bar',

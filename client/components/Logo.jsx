@@ -26,7 +26,7 @@ function nextColor(index = 0) {
 
 export default ({ name }) => {
   return (
-    <div style={{ fontSize: '5em', fontWeight: 'bold' }}>
+    <div style={{ padding: '0.1em', fontSize: '5em', fontWeight: 'bold' }}>
       {name.split('').map((char, index) => {
         const [color, background] = nextColor(index);
         return (

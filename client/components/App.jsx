@@ -9,7 +9,9 @@ import GraphSelect from './GraphSelect';
 import Variable from './Variable';
 import Filters from './Filters';
 import GroupBy from './GroupBy';
+import Layout from './Layout';
 import useProcessor from './useProcessor';
+import useGraphOpt from './useGraphOpt';
 import useExample from './useExample';
 
 const App = styled.div`
@@ -18,27 +20,44 @@ const App = styled.div`
   width: 100%;
 `;
 
+const GraphContainer = styled.div`
+  height: 100%;
+  position: sticky;
+  top: 8px;
+  width: calc(100% - 350px);
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  width: 350px;
+  padding: 1em 0;
+`;
+
+
 export default () => {
   const [state, dispatch] = useProcessor();
+  const [layoutState, dispatchLayout] = useGraphOpt();
 
   useExample((payload) => dispatch({ type: 'init', payload }));
 
   return (
     <App>
       {/* {isLoading && <Spinner />} */}
-      <div style={{ height: '100%', position: 'sticky', top: '8px', width: 'calc(100% - 350px)' }}>
+      <GraphContainer>
         <div>
           <Logo name='EasyChart' />
         </div>
         <Graph
+          layoutState={layoutState}
           graphType={state.graphType}
           data={state.results}
           dataType={state.dataType}
           x={state.x}
           y={state.y}
           dispatch={dispatch} />
-      </div>
-      <form style={{ display: 'flex', flexDirection: 'column', width: '350px' }}>
+      </GraphContainer>
+      <Form>
         <FileCSV dispatch={dispatch} />
         <GraphSelect
           graphType={state.graphType}
@@ -54,7 +73,10 @@ export default () => {
         <GroupBy
           groups={state.groups}
           dispatch={dispatch} />
-      </form>
+        <Layout
+          state={layoutState}
+          dispatch={dispatchLayout} />
+      </Form>
     </App>
   );
 };
