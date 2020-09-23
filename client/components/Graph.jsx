@@ -34,6 +34,8 @@ export default ({ layoutState, graphType, data, dataType, x, y, dispatch }) => {
         type = 'category';
     }
 
+    // if (layoutState.logX)
+
     chart.destroy();
     const ctx = ref.current.getContext('2d');
 

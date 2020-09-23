@@ -1,16 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { FieldSet, Row } from './Shared';
+import { FieldSet, Row, CheckBox } from './Shared';
 import InfiniteScroll from './InfiniteScroll';
-
-const CheckBox = ({ name, checked, onChange }) => {
-  return (
-    <div style={{ marginTop: '0.2em'}}>
-      <input type='checkbox' name={name} checked={checked} onChange={onChange} />
-      <label>{String(name)}</label>
-    </div>
-  )
-}
 
 const Filter = ({ category, filters, dispatch }) => {
   const [allSelected, setAllSelected] = useState(true);

@@ -60,6 +60,15 @@ const FieldSet = ({ header, children }) => {
   )
 }
 
+const CheckBox = ({ name, checked, onChange }) => {
+  return (
+    <div style={{ marginTop: '0.2em'}}>
+      <input type='checkbox' name={name} checked={checked} onChange={onChange} />
+      <label>{String(name)}</label>
+    </div>
+  )
+}
+
 export {
   FieldSet,
   Header,
@@ -67,4 +76,5 @@ export {
   Counter,
   Button,
   Row,
+  CheckBox,
 }

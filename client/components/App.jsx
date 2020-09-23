@@ -64,6 +64,7 @@ export default () => {
           dispatch={dispatch} />
         <Variable
           groups={state.groups}
+          aggregate={state.aggregate}
           x={state.x}
           y={state.y}
           dispatch={dispatch} />
