@@ -17,10 +17,9 @@ function createDataSet(label, data, index, graphType, groupSize) {
       break;
     default:
       break;
-
   }
 
-  const dataset = {
+  return {
     label,
     fill,
     borderColor: nextColor('color', index),
@@ -33,8 +32,27 @@ function createDataSet(label, data, index, graphType, groupSize) {
     data,
     ...colors,
   };
+}
 
-  return dataset;
+function getAccumFuncs(aggregate, groups, counts) {
+  let func;
+  const accumFuncs = new Map([[counts, (accum = 0, b) => isNaN(Number(b)) ? accum : accum + 1]]);
+
+  switch (aggregate) {
+    case 'Max':
+      func = (accum = Number.NEGATIVE_INFINITY, b) => isNaN(Number(b)) ? accum : Math.max(accum, b);
+      accumFuncs.set(groups, func);
+      break;
+    case 'Min':
+      func = (accum = Number.POSITIVE_INFINITY, b) => isNaN(Number(b)) ? accum : Math.min(accum, b);
+      accumFuncs.set(groups, func);
+      break;
+    default:
+      accumFuncs.set(groups, (accum, b) => (accum || 0) + (b || 0));
+      break;
+  }
+
+  return accumFuncs;
 }
 
 function processData(state) {
@@ -45,6 +63,8 @@ function processData(state) {
   const groups = new Map();
   const counts = new Map();
   const labels = new Set();
+
+  const accumFuncs = getAccumFuncs(aggregate, groups, counts);
 
   filterData(data, filters, x, y, (record) => {
     const key = Array.from(selectedGroup).map((val) => record[val]).join(',');
@@ -61,15 +81,12 @@ function processData(state) {
       case 'bar':
       case 'pie':
       case 'doughnut':
-        if (!groups.get(key)) {
-          groups.set(key, new Map());
-          counts.set(key, new Map());
-        }
-        let prev =  groups.get(key).get(xKey) || 0;
-        groups.get(key).set(xKey, prev + (record[y] || 0));
-
-        prev =  counts.get(key).get(xKey) || 0;
-        counts.get(key).set(xKey, prev + 1);
+        [groups, counts].forEach((counter) => {
+          if (!counter.get(key)) counter.set(key, new Map());
+          const prev =  counter.get(key).get(xKey);
+          const func = accumFuncs.get(counter);
+          counter.get(key).set(xKey, func(prev, record[y]));
+        });
         break;
       case 'bubble':
       case 'radar':
@@ -88,21 +105,20 @@ function processData(state) {
 }
 
 function aggregateData(aggregate, graphType, groups, counts) {
-  if (graphType !== 'scatter') {
-    switch (aggregate) {
-      case 'Count':
-        groups.forEach((data, group) => {
-          data.forEach((y, x) => data.set(x, counts.get(group).get(x)));
-        })
-        break;
-      case 'Average':
-        groups.forEach((data, group) => {
-          data.forEach((y, x) => data.set(x, y / counts.get(group).get(x)));
-        })
-        break;
-      default:
-        break;
-    }
+  if (graphType === 'scatter') return;
+  switch (aggregate) {
+    case 'Count':
+      groups.forEach((data, group) => {
+        data.forEach((y, x) => data.set(x, counts.get(group).get(x)));
+      })
+      break;
+    case 'Average':
+      groups.forEach((data, group) => {
+        data.forEach((y, x) => data.set(x, y / counts.get(group).get(x)));
+      })
+      break;
+    default:
+      break;
   }
 }
 
@@ -115,9 +131,11 @@ function createDataSets(groups, labels, graphType) {
     switch (graphType) {
       case 'line':
       case 'area':
-        updatedData = Array.from(labels).map((x) => {
-          if (data.get(x) !== undefined) return ({ x, y: data.get(x) });
-        });
+        updatedData = (
+          Array.from(labels)
+            .filter((x) => data.get(x) !== undefined)
+            .map((x) => ({ x, y: data.get(x) }))
+            );
         break;
       case 'bar':
       case 'pie':

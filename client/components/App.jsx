@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
 import Logo from './Logo';
@@ -14,41 +14,62 @@ import useProcessor from './useProcessor';
 import useGraphOpt from './useGraphOpt';
 import useExample from './useExample';
 
+const MIN_WIDTH = '768px';
+
 const App = styled.div`
   display: flex;
   font-family: sans-serif;
   width: 100%;
+  @media (max-width: ${MIN_WIDTH}) {
+    flex-direction: column;
+  }
 `;
 
 const GraphContainer = styled.div`
-  height: 100%;
   position: sticky;
-  top: 8px;
+  top: 0;
+  height: 100vh;
   width: calc(100% - 350px);
+  @media (max-width: ${MIN_WIDTH}) {
+    width: 100%;
+  }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  width: 350px;
-  padding: 1em 0;
+  width: calc(350px - 2em);
+  padding: 1em;
+  background-color: white;
+  z-index: 1;
+  @media (max-width: ${MIN_WIDTH}) {
+    width: calc(100% - 2em);
+  }
 `;
 
 
 export default () => {
   const [state, dispatch] = useProcessor();
   const [layoutState, dispatchLayout] = useGraphOpt();
+  const [offsetHeight, setOffsetHeight] = useState(null);
+  const ref = useRef(null);
 
   useExample((payload) => dispatch({ type: 'init', payload }));
+
+  useEffect(() => {
+    setOffsetHeight(ref.current.offsetHeight)
+    window.addEventListener('resize', () => setOffsetHeight(ref.current.offsetHeight));
+  }, [])
 
   return (
     <App>
       {/* {isLoading && <Spinner />} */}
       <GraphContainer>
-        <div>
-          <Logo name='EasyChart' />
+        <div ref={ref}>
+          <Logo name='Chartsy' />
         </div>
         <Graph
+          height={offsetHeight}
           layoutState={layoutState}
           graphType={state.graphType}
           data={state.results}

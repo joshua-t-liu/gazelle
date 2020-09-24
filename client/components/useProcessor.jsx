@@ -37,28 +37,23 @@ function init(data, type) {
 
 function reducer(state, action) {
   const { type, payload } = action;
+  const { data, category, name, checked, group } = payload;
   let nextState;
 
   switch (type) {
     case 'init':
-      const { filters, groups } = init(payload.data);
-      nextState = { ...initial(), ...payload, filters, groups };
+      nextState = { ...initial(), ...payload, ...init(data) };
       nextState.selectedGroup.forEach((group) => nextState.groups.set(group, true));
       break;
     case 'filters':
-      nextState = { ...state };
-      nextState.filters.get(payload.category).set(payload.name, payload.checked);
+      state.filters.get(category).set(name, checked);
       break;
     case 'filters-all':
-      nextState = { ...state };
-      const newFilters = nextState.filters.get(payload.category);
-      newFilters.forEach((_, val) => newFilters.set(val, payload.checked));
+      state.filters.get(category).forEach((_, val) => newFilters.set(val, checked));
       break;
     case 'groups':
-      nextState = { ...state };
-      const newGroups = nextState.selectedGroup;
-      const group = payload.group;
-      nextState.groups.set(group, !newGroups.has(group));
+      const newGroups = state.selectedGroup;
+      state.groups.set(group, !newGroups.has(group));
       if (newGroups.has(group)) {
         newGroups.delete(group);
       } else {
@@ -69,16 +64,16 @@ function reducer(state, action) {
     case 'x':
     case 'y':
     case 'graph':
-      nextState = { ...state, ...payload }
+      nextState = payload;
       break;
     default:
-      console.error(type)
       throw new Error();
   }
 
-  const results = processData(nextState);
+  const results = processData({ ...state, ...nextState });
 
   return {
+    ...state,
     ...nextState,
     results,
   }

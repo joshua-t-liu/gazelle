@@ -46,7 +46,7 @@ const AdvancedFields = ({ aggregate, dispatch }) => {
       {isExpanded &&
         <Row subheader='Group data points with the same X values using'>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {['Sum', 'Average', 'Count'] //None, Min, Max, Median
+            {['Sum', 'Average', 'Count', 'Max', 'Min'] //None, Min, Max, Median
               .map((func) => (
                 <Button
                   key={func}

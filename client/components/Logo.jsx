@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 
 const COLORS = [
   'rgb(255, 99, 132)',
@@ -20,13 +21,25 @@ const BACKGROUND_COLORS = [
   'rgba(201, 203, 207, 0.2)'
 ];
 
+const MIN_WIDTH = '768px';
+
+const Logo = styled.div`
+  padding: 0.1em;
+  font-size: 5em;
+  font-weight: bold;
+  @media (max-width: ${MIN_WIDTH}) {
+    font-size: 3em;
+    text-align: center;
+  }
+`;
+
 function nextColor(index = 0) {
   return [COLORS[index % COLORS.length], BACKGROUND_COLORS[index % BACKGROUND_COLORS.length]];
 }
 
 export default ({ name }) => {
   return (
-    <div style={{ padding: '0.1em', fontSize: '5em', fontWeight: 'bold' }}>
+    <Logo>
       {name.split('').map((char, index) => {
         const [color, background] = nextColor(index);
         return (
@@ -35,6 +48,6 @@ export default ({ name }) => {
           </span>
         )
       })}
-    </div>
+    </Logo>
   )
 };

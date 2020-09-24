@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import styled from 'styled-components';
 import Chart from 'chart.js';
 
 const GRAPH_TYPES = {
@@ -10,7 +11,15 @@ const GRAPH_TYPES = {
   'doughnut': 'doughnut',
 };
 
-export default ({ layoutState, graphType, data, dataType, x, y, dispatch }) => {
+const Graph = styled.div`
+  position: relative;
+  height: ${({ height }) => (height) ? `calc(100% - ${height}px - 2em)` : null};
+  width: calc(100% - 2em);
+  flex-shrink: 0;
+  padding: 1em;
+`;
+
+export default ({ height, layoutState, graphType, data, dataType, x, y, dispatch }) => {
   const [chart, setChart] = useState(null);
   const ref = useRef(null);
 
@@ -96,8 +105,8 @@ export default ({ layoutState, graphType, data, dataType, x, y, dispatch }) => {
   }, [layoutState]);
 
   return (
-    <div style={{ position: 'relative', height: '80vh', width: 'calc(100% - 2em)', flexShrink: 0, padding: '1em' }}>
+    <Graph height={height}>
       <canvas id='chart' ref={ref}></canvas>
-    </div>
+    </Graph>
   )
 }

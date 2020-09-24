@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { FieldSet, Row, CheckBox } from './Shared';
+import { FieldSet, Row } from './Shared';
 import InfiniteScroll from './InfiniteScroll';
+import FastScroll from './FastScroll';
+
+const CheckBox = ({ item }) => {
+  const { name, checked, onChange } = item;
+  return (
+    <div style={{ marginTop: '0.2em'}}>
+      <input type='checkbox' name={name} checked={checked} onChange={onChange} />
+      <label>{String(name)}</label>
+    </div>
+  )
+}
 
 const Filter = ({ category, filters, dispatch }) => {
   const [allSelected, setAllSelected] = useState(true);
@@ -22,6 +33,15 @@ const Filter = ({ category, filters, dispatch }) => {
     }
   }
 
+  const list = [{ name:'all', checked: allSelected, onChange: toggle(true) }]
+  values.forEach((val) => {
+    list.push({
+      name: val,
+      checked: filters.get(val),
+      onChange: toggle()
+    })
+  })
+
   return (
     <Row subheader={category}>
       <div
@@ -31,19 +51,11 @@ const Filter = ({ category, filters, dispatch }) => {
       </div>
 
       {isExpanded &&
-        (<InfiniteScroll id={`filter-${category}`}>
-            <CheckBox
-              name={'all'}
-              checked={allSelected}
-              onChange={toggle(true)} />
-            {values.map((val) => (
-              <CheckBox
-                key={val}
-                name={val}
-                checked={filters.get(val)}
-                onChange={toggle()} />
-                ))}
-        </InfiniteScroll>)}
+        <FastScroll
+          id={`filter-${category}`}
+          Component={CheckBox}
+          height={'20vh'}
+          list={list} />}
     </Row>
   )
 }
