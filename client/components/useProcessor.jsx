@@ -49,7 +49,7 @@ function reducer(state, action) {
       state.filters.get(category).set(name, checked);
       break;
     case 'filters-all':
-      state.filters.get(category).forEach((_, val) => newFilters.set(val, checked));
+      state.filters.get(category).forEach((_, val) => state.filters.get(category).set(val, checked));
       break;
     case 'groups':
       const newGroups = state.selectedGroup;

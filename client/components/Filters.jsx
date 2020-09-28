@@ -8,36 +8,37 @@ const CheckBox = ({ item }) => {
   const { name, checked, onChange } = item;
   return (
     <div style={{ marginTop: '0.2em'}}>
-      <input type='checkbox' name={name} checked={checked} onChange={onChange} />
+      <input type='checkbox' name={name} checked={checked()} onChange={onChange} />
       <label>{String(name)}</label>
     </div>
   )
 }
 
 const Filter = ({ category, filters, dispatch }) => {
-  const [allSelected, setAllSelected] = useState(true);
+  const [allSelected, setAllSelected] = useState(filters.size);
   const [isExpanded, setExpand] = useState(false);
-
-  const values = Array.from(filters.keys());
 
   function toggle(all) {
     return (event) => {
       const { name, checked } = event.target;
 
       if (all) {
-        setAllSelected(checked);
+        setAllSelected((curr) => (curr === filters.size) ? 0 : filters.size);
         dispatch({ type: 'filters-all', payload: { category, checked }});
       } else {
+        setAllSelected((curr) => curr + (-1) ** checked);
         dispatch({ type: 'filters', payload: { category, name, checked } });
       }
     }
   }
 
-  const list = [{ name:'all', checked: allSelected, onChange: toggle(true) }]
+  const values = Array.from(filters.keys());
+
+  const list = [{ name:'all', checked: () => allSelected === filters.size, onChange: toggle(true) }]
   values.forEach((val) => {
     list.push({
       name: val,
-      checked: filters.get(val),
+      checked: () => filters.get(val),
       onChange: toggle()
     })
   })

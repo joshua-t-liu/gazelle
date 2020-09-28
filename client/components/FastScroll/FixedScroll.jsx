@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const Row = ({ top, height, item, children }) => {
   return (
-    <div style={{ position: 'absolute', top: top, height: `${height}px` }}>{item}
-      {children}
+    <div
+      style={{ position: 'absolute', transform: `translateY(${top}px)`, height: `${height}px` }}>
+        {item}
+        {children}
     </div>
   )
 }
@@ -13,6 +15,16 @@ function getOffset(offset, index, height, containerHeight) {
   const remainder = (count - Math.floor(count)) * height;
   return Math.min(offset + index * height - remainder, containerHeight);
 }
+
+//list of item heights
+//render a couplr of them, store their heights
+//calculate the cuumulative sum
+//how would you find the correct item in O(1) time maybe log(n)
+// function(offset) => index
+//
+// 1 - 10, 10 -15, 15 - 30, 30 - 45, 45 -50
+//0
+//0
 
 export default ({ id, list = [], Component = Row, height = '20vh', style = {} }) => {
   const [offset, setOffset] = useState(0);
