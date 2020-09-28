@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { FieldSet, Row } from './Shared';
 import InfiniteScroll from './InfiniteScroll';
-import FastScroll from './FastScroll';
+import List from './List';
 
 const CheckBox = ({ item }) => {
   const { name, checked, onChange } = item;
@@ -52,7 +52,7 @@ const Filter = ({ category, filters, dispatch }) => {
       </div>
 
       {isExpanded &&
-        <FastScroll
+        <List
           id={`filter-${category}`}
           Component={CheckBox}
           height={'20vh'}

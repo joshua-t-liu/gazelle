@@ -1,38 +1,40 @@
 import React, { useReducer, useEffect } from 'react';
 
-function retrieve(offset, prev, ref, heights, list, containerHeight) {
+function retrieve(offset, ref, heights, list, containerHeight) {
   let addHeight = 0;
 
   Array.from(ref.current.children).forEach(({ id, offsetHeight, style }) => {
     if (!heights[id]) {
-      const top = style.transform.match(/translateY\(([0-9]+)px\)/);
+      const top = style.transform.match(/translateY\(([0-9]+)px\)/)[1];
       addHeight += offsetHeight;
       heights[id] = {
         index: parseInt(id),
-        top: Number(top[1]),
+        top: Number(top),
         height: offsetHeight,
       };
     }
   });
 
-  const items = [];
+  const items = { children: [] };
   let currHeight = 0;
 
   let index = getStartIndex(heights, offset);
 
-  while (currHeight < 2 * containerHeight && heights[index]) {
-    items.push(heights[index]);
+  while (
+    (checkNext(items, offset, containerHeight) || items.children.length === 1)
+    && heights[index]) {
+    items.children.push(heights[index]);
     currHeight += heights[index].height;
     index++;
   }
 
-  if (currHeight < 2 * containerHeight && index < list.length) {
-    const newItem = { index, top: 0 };
-    if (index > 0) {
-      const { top, height } = items[items.length - 1];
-      newItem.top = top + height;
+  if (checkNext(ref.current, offset, containerHeight) && index < list.length) {
+    let top = 0;
+    if (index) {
+      const { top: prevTop, height: prevHeight } = items.children[items.children.length - 1];
+      top = prevTop + prevHeight;
     }
-    items.push(newItem);
+    items.children.push({ index, top });
   }
 
   return {
@@ -87,7 +89,7 @@ function init([ref, list, height]) {
     list,
     heights: [],
     totalHeight: 0,
-    items: [],
+    items: { children: [] },
     offset: 0,
     containerHeight,
     currHeight: 0,
@@ -104,12 +106,13 @@ function reducer(state, action) {
     case 'reset':
       return init([ref, list, `${containerHeight}px`]);
       break;
-    case 'display':
-      const { index = 0 } = prev[prev.length - 1] || {};
-      if (state.currHeight > 2 * containerHeight || index === list.length - 1) return state;
+    case 'getNext':
+      const { index = 0 } = prev.children[prev.children.length - 1] || {};
+      if (index === list.length - 1) return state;
+      if (!checkNext(ref.current, state.offset, containerHeight)) return state;
     case 'offset':
       const offset = (payload.offset !== undefined) ? payload.offset : state.offset;
-      const { items, addHeight, currHeight } = retrieve(offset, prev, ref, heights, list, containerHeight);
+      const { items, addHeight, currHeight } = retrieve(offset, ref, heights, list, containerHeight);
       return {
         ref,
         list,
@@ -126,6 +129,23 @@ function reducer(state, action) {
   }
 }
 
+function checkNext(ele, offset, containerHeight) {
+  if (!ele) return true;
+
+  const children = ele.children;
+  const last = children[children.length - 1];
+
+  if (!last) return true;
+
+  let top = last.top;
+  if (top === undefined) {
+    top = last.style.transform.match(/translateY\(([0-9]+)px\)/)[1];
+    top = Number(top);
+  }
+
+  return top < (offset + 2 * containerHeight);
+}
+
 export default (ref, list, height) => {
   const [state, dispatch] = useReducer(reducer, [ref, list, height], init);
 
@@ -134,7 +154,7 @@ export default (ref, list, height) => {
   }, [])
 
   useEffect(() => {
-    if (state.currHeight < 2 * state.containerHeight) dispatch({ type: 'display' });
+    if (checkNext(ref.current, state.offset, state.containerHeight)) dispatch({ type: 'getNext' });
   }, [state.items]);
 
   return [state, dispatch];

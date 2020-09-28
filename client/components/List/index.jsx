@@ -26,7 +26,7 @@ export default ({ id, list = [], Component, height = '20vh', style = {} }) => {
           ref={ref}
           style={{ position: 'relative', height: (state.totalHeight) ? `${state.totalHeight}px` : '200%' }}>
 
-          {state.items.map(({ index, top }) => (
+          {state.items.children.map(({ index, top }) => (
               <Row
                 key={String(index)}
                 id={index}

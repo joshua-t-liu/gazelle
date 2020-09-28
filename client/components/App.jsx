@@ -13,6 +13,7 @@ import Layout from './Layout';
 import useProcessor from './useProcessor';
 import useGraphOpt from './useGraphOpt';
 import useExample from './useExample';
+import List from './List';
 
 const MIN_WIDTH = '768px';
 
@@ -61,8 +62,12 @@ export default () => {
     window.addEventListener('resize', () => setOffsetHeight(ref.current.offsetHeight));
   }, [])
 
+
+  // const tst = Array(100000).fill().map(() => Array(Math.floor(1000 * Math.random())).fill('#').join(' '));
+
   return (
     <App>
+      {/* <List Component={({item}) => <div style={{ border: 'solid 1px' }}>{item}</div>} list={tst}/> */}
       {/* {isLoading && <Spinner />} */}
       <GraphContainer>
         <div ref={ref}>
