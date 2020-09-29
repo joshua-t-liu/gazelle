@@ -13,7 +13,6 @@ const Row = ({ id, top, children }) => {
 }
 
 export default ({ id, list = [], Component, height = '20vh', style = {} }) => {
-  // const ref = useRef(null);
   const [state, dispatch] = useScroll(list, height);
   const { totalHeight, items } = state;
 
@@ -24,8 +23,7 @@ export default ({ id, list = [], Component, height = '20vh', style = {} }) => {
       style={{ height, width: '100%', overflowY: 'auto', ...style }}>
 
         <div
-          // ref={ref}
-          style={{ position: 'relative', height: (totalHeight) ? `${totalHeight}px` : '200%' }}>
+          style={{ position: 'relative', height: `${totalHeight}px` }}>
 
           {items.map(({ index, top }) => (
               <Row

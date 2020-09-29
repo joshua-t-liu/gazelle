@@ -1,17 +1,18 @@
 import React, { useReducer, useEffect } from 'react';
 
-function retrieve(offset, state) {
-  const { items: prev, heights, list, containerHeight, preLoadHeight } = state;
+function store(state) {
+  const { items, heights } = state;
   let addHeight = 0;
 
-  prev.forEach(({ index, top }) => {
+  items.forEach(({ index, top }) => {
     const ele = document.getElementById(String(index));
     if (ele && !heights[index]) {
       const images = ele.querySelectorAll('img');
-      const { offsetHeight } = ele;
       let finished = true;
       images.forEach((img) => finished = finished && img.complete);
       if (!finished) return;
+
+      const { offsetHeight } = ele;
       addHeight += offsetHeight;
       heights[index] = {
         index,
@@ -21,30 +22,26 @@ function retrieve(offset, state) {
     }
   })
 
+  return addHeight;
+}
+
+function retrieve(offset, state) {
+  const { heights, list, checkNext } = state;
   const items = [];
 
   let index = getStartIndex(heights, offset);
 
-  while (
-    (checkNext(items, offset, containerHeight, preLoadHeight) || items.length === 1)
-    && heights[index]) {
+  while (heights[index] && (checkNext(items, offset) || items.length === 1)) {
     items.push(heights[index]);
     index++;
   }
 
-  if (checkNext(items, offset, containerHeight, preLoadHeight) && index < list.length) {
-    let top = 0;
-    if (index) {
-      const { top: prevTop, height: prevHeight } = items[items.length - 1];
-      top = prevTop + prevHeight;
-    }
-    items.push({ index, top });
-  }
+  const lastItem = items[items.length - 1];
+  const top = (lastItem) ? lastItem.top + lastItem.height : 0;
 
-  return {
-    items,
-    addHeight,
-  };
+  if (index < list.length && checkNext(items, offset)) items.push({ index, top });
+
+  return items;
 }
 
 function checkRange(low, high, val) {
@@ -96,31 +93,31 @@ function init([list, height, preLoadHeight = 2]) {
     containerHeight,
     originalHeight: height,
     preLoadHeight,
+    checkNext: (items, offset) => checkNext(items, offset, containerHeight, preLoadHeight),
   };
 }
 
 function reducer(state, action) {
-  const { items: prev, list, totalHeight, containerHeight, originalHeight, preLoadHeight } = state;
+  const { items: prev, offset: prevOffset, list } = state;
   const { type, payload = {} } = action;
-
-  const res = [];
 
   switch (type) {
     case 'reset':
-      return init([list, originalHeight, preLoadHeight]);
+      return init([list, state.originalHeight, state.preLoadHeight]);
       break;
     case 'getNext':
       const { index = 0 } = prev[prev.length - 1] || {};
       if (index === list.length - 1) return state;
-      if (!checkNext(prev, state.offset, containerHeight, preLoadHeight)) return state;
+      if (!state.checkNext(prev, prevOffset)) return state;
     case 'offset':
-      const offset = (payload.offset !== undefined) ? payload.offset : state.offset;
-      const { items, addHeight } = retrieve(offset, state);
+      const offset = (payload.offset !== undefined) ? payload.offset : prevOffset;
+      const addHeight = store(state);
+      const items = retrieve(offset, state);
       return {
         ...state,
         offset,
         items,
-        totalHeight: totalHeight + addHeight,
+        totalHeight: state.totalHeight + addHeight,
       };
       break;
     default:
@@ -143,8 +140,8 @@ export default (list, height, preLoadHeight) => {
   }, [])
 
   useEffect(() => {
-    const { items, offset, containerHeight, preLoadHeight } = state;
-    if (checkNext(items, offset, containerHeight, preLoadHeight)) dispatch({ type: 'getNext' });
+    const { checkNext, items, offset } = state;
+    if (checkNext(items, offset)) dispatch({ type: 'getNext' });
   }, [state.items]);
 
   return [state, dispatch];
