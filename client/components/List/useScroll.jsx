@@ -39,7 +39,7 @@ function retrieve(offset, state) {
   const lastItem = items[items.length - 1];
   const top = (lastItem) ? lastItem.top + lastItem.height : 0;
 
-  if (index < list.length && checkNext(items, offset)) items.push({ index, top });
+  if (checkNext(items, offset)) items.push({ index, top });
 
   return items;
 }
@@ -93,12 +93,12 @@ function init([list, height, preLoadHeight = 2]) {
     containerHeight,
     originalHeight: height,
     preLoadHeight,
-    checkNext: (items, offset) => checkNext(items, offset, containerHeight, preLoadHeight),
+    checkNext: (items, offset) => checkNext(items, offset, containerHeight, preLoadHeight, list.length - 1),
   };
 }
 
 function reducer(state, action) {
-  const { items: prev, offset: prevOffset, list } = state;
+  const { offset: prevOffset, list } = state;
   const { type, payload = {} } = action;
 
   switch (type) {
@@ -106,9 +106,7 @@ function reducer(state, action) {
       return init([list, state.originalHeight, state.preLoadHeight]);
       break;
     case 'getNext':
-      const { index = 0 } = prev[prev.length - 1] || {};
-      if (index === list.length - 1) return state;
-      if (!state.checkNext(prev, prevOffset)) return state;
+      if (!state.checkNext(state.items, prevOffset)) return state;
     case 'offset':
       const offset = (payload.offset !== undefined) ? payload.offset : prevOffset;
       const addHeight = store(state);
@@ -125,11 +123,11 @@ function reducer(state, action) {
   }
 }
 
-function checkNext(items, offset, containerHeight, preLoadHeight) {
+function checkNext(items, offset, containerHeight, preLoadHeight, size) {
   if (!items) return true;
   const last = items[items.length - 1];
   if (!last) return true;
-  return last.top < (offset + preLoadHeight * containerHeight);
+  return last.top < (offset + preLoadHeight * containerHeight) && last.index < size;
 }
 
 export default (list, height, preLoadHeight) => {
