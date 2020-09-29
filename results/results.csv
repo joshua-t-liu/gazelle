@@ -6,7 +6,7 @@ iphone-11-pro-max,sprint,iphone-11-pro-max-256gb-sprint,497063-gpid,212,212
 iphone-11-pro-max,sprint,iphone-11-pro-max-512gb-sprint,497069-gpid,212,212
 iphone-11-pro-max,t-mobile,iphone-11-pro-max-64gb-t-mobile,497058-gpid,137,97
 iphone-11-pro-max,t-mobile,iphone-11-pro-max-256gb-t-mobile,497064-gpid,212,212
-iphone-11-pro-max,t-mobile,iphone-11-pro-max-512gb-t-mobile,497070-gpid,212,212
+iphone-11-pro-max,t-mobile,iphone-11-pro-max-512gb-t-mobile,497070-gpid,undefined,212
 iphone-11-pro-max,verizon,iphone-11-pro-max-64gb-verizon,497059-gpid,212,212
 iphone-11-pro-max,verizon,iphone-11-pro-max-256gb-verizon,497065-gpid,226,226
 iphone-11-pro-max,verizon,iphone-11-pro-max-512gb-verizon,497071-gpid,226,226
@@ -80,7 +80,7 @@ iphone-xs,t-mobile,iphone-xs-64gb-t-mobile,496773-gpid,77,77
 iphone-xs,t-mobile,iphone-xs-256gb-t-mobile,496793-gpid,80,80
 iphone-xs,t-mobile,iphone-xs-512gb-t-mobile,496805-gpid,80,80
 iphone-xs,verizon,iphone-xs-64gb-verizon,496776-gpid,83,81
-iphone-xs,verizon,iphone-xs-256gb-verizon,496796-gpid,97,85
+iphone-xs,verizon,iphone-xs-256gb-verizon,496796-gpid,undefined,97
 iphone-xs,verizon,iphone-xs-512gb-verizon,496807-gpid,91,85
 iphone-xs,unlocked,iphone-xs-64gb-unlocked,496779-gpid,81,81
 iphone-xs,unlocked,iphone-xs-256gb-unlocked,496799-gpid,96,85
@@ -170,7 +170,7 @@ iphone-7-plus,metropcs,iphone-7-plus-128gb-metropcs,496274-gpid,44,44
 iphone-7-plus,metropcs,iphone-7-plus-256gb-metropcs,496275-gpid,44,44
 iphone-7-plus,unlocked,iphone-7-plus-32gb-unlocked,496208-gpid,50,50
 iphone-7-plus,unlocked,iphone-7-plus-128gb-unlocked,496209-gpid,57,57
-iphone-7-plus,unlocked,iphone-7-plus-256gb-unlocked,496210-gpid,57,57
+iphone-7-plus,unlocked,iphone-7-plus-256gb-unlocked,496210-gpid,57,undefined
 iphone-7-plus,other,iphone-7-plus-128gb-other,496212-gpid,44,44
 iphone-7-plus,other,iphone-7-plus-256gb-other,496213-gpid,44,44
 iphone-7,at-t,iphone-7-32gb-at-t,496177-gpid,15,5
@@ -182,7 +182,7 @@ iphone-7,sprint,iphone-7-256gb-sprint,496182-gpid,9,5
 iphone-7,t-mobile,iphone-7-32gb-t-mobile,496183-gpid,12,5
 iphone-7,t-mobile,iphone-7-128gb-t-mobile,496184-gpid,6,5
 iphone-7,t-mobile,iphone-7-256gb-t-mobile,496185-gpid,9,5
-iphone-7,verizon,iphone-7-32gb-verizon,496186-gpid,19,6
+iphone-7,verizon,iphone-7-32gb-verizon,496186-gpid,19,undefined
 iphone-7,verizon,iphone-7-128gb-verizon,496187-gpid,19,8
 iphone-7,verizon,iphone-7-256gb-verizon,496188-gpid,23,9
 iphone-7,unlocked,iphone-7-32gb-unlocked,496189-gpid,10,6
@@ -197,8 +197,8 @@ iphone-6s-plus,sprint,iphone-6s-plus-32gb-sprint,496286-gpid,15,
 iphone-6s-plus,sprint,iphone-6s-plus-64gb-sprint,496037-gpid,16,1
 iphone-6s-plus,sprint,iphone-6s-plus:-128gb-sprint,496038-gpid,13,1
 iphone-6s-plus,t-mobile,iphone-6s-plus-16gb-t-mobile,496039-gpid,10,
-iphone-6s-plus,t-mobile,iphone-6s-plus-32gb-t-mobile,496287-gpid,14,
-iphone-6s-plus,t-mobile,iphone-6s-plus-64gb-t-mobile,496040-gpid,12,1
+iphone-6s-plus,t-mobile,iphone-6s-plus-32gb-t-mobile,496287-gpid,undefined,
+iphone-6s-plus,t-mobile,iphone-6s-plus-64gb-t-mobile,496040-gpid,undefined,1
 iphone-6s-plus,t-mobile,iphone-6s-plus:-128gb-t-mobile,496041-gpid,12,1
 iphone-6s-plus,verizon,iphone-6s-plus-16gb-verizon,496045-gpid,11,8
 iphone-6s-plus,verizon,iphone-6s-plus-32gb-verizon,496288-gpid,22,7
@@ -221,7 +221,7 @@ iphone-6s,t-mobile,iphone-6s-32gb-t-mobile,496281-gpid,,
 iphone-6s,t-mobile,iphone-6s-64gb-t-mobile,496025-gpid,9,
 iphone-6s,t-mobile,iphone-6s:-128gb-t-mobile,496026-gpid,7,
 iphone-6s,verizon,iphone-6s-16gb-verizon,496030-gpid,,
-iphone-6s,verizon,iphone-6s-32gb-verizon,496282-gpid,,
+iphone-6s,verizon,iphone-6s-32gb-verizon,496282-gpid,,undefined
 iphone-6s,verizon,iphone-6s-64gb-verizon,496031-gpid,14,1
 iphone-6s,verizon,iphone-6s:-128gb-verizon,496032-gpid,11,2
 iphone-6s,unlocked,iphone-6s-16gb-unlocked,496027-gpid,,
@@ -230,7 +230,7 @@ iphone-6s,unlocked,iphone-6s-64gb-unlocked,496028-gpid,14,1
 iphone-6s,unlocked,iphone-6s-128gb-unlocked,496029-gpid,10,2
 iphone-6-plus,at-t,iphone-6-plus-32gb-at-t,496951-gpid,,
 iphone-6-plus,at-t,iphone-6-plus-64gb-at-t,495691-gpid,,
-iphone-6-plus,at-t,iphone-6-plus-128gb-at-t,495692-gpid,,undefined
+iphone-6-plus,at-t,iphone-6-plus-128gb-at-t,495692-gpid,,
 iphone-6-plus,t-mobile,iphone-6-plus-32gb-t-mobile,496953-gpid,,
 iphone-6-plus,verizon,iphone-6-plus-16gb-verizon,495702-gpid,5,5
 iphone-6-plus,verizon,iphone-6-plus-32gb-verizon,496955-gpid,5,5
@@ -239,19 +239,19 @@ iphone-6-plus,verizon,iphone-6-plus:-128gb-verizon,495704-gpid,8,8
 iphone-6-plus,unlocked,iphone-6-plus-32gb-unlocked,496954-gpid,5,5
 iphone-6-plus,unlocked,iphone-6-plus-64gb-unlocked,495700-gpid,8,8
 iphone-6-plus,unlocked,iphone-6-plus:-128gb-unlocked,495701-gpid,8,8
-iphone-6-plus,other,iphone-6-plus-32gb-other,496956-gpid,,
+iphone-6-plus,other,iphone-6-plus-32gb-other,496956-gpid,undefined,
 iphone-6,verizon,iphone-6-32gb-verizon,496709-gpid,1,1
 iphone-6,verizon,iphone-6-64gb-verizon,495685-gpid,3,3
 iphone-6,unlocked,iphone-6-32gb-unlocked,496708-gpid,1,1
 iphone-6,unlocked,iphone-6-64gb-unlocked,495682-gpid,3,3
 iphone-se-2nd-gen,at-t,iphone-se-2nd-gen-64gb-at-t,497342-gpid,20,20
 iphone-se-2nd-gen,at-t,iphone-se-2nd-gen-128gb-at-t,497375-gpid,25,25
-iphone-se-2nd-gen,at-t,iphone-se-2nd-gen-256gb-at-t,497348-gpid,30,30
+iphone-se-2nd-gen,at-t,iphone-se-2nd-gen-256gb-at-t,497348-gpid,30,undefined
 iphone-se-2nd-gen,sprint,iphone-se-2nd-gen-64gb-sprint,497343-gpid,20,20
 iphone-se-2nd-gen,sprint,iphone-se-2nd-gen-128gb-sprint,497376-gpid,25,25
 iphone-se-2nd-gen,sprint,iphone-se-2nd-gen-256gb-sprint,497349-gpid,30,30
 iphone-se-2nd-gen,t-mobile,iphone-se-2nd-gen-64gb-t-mobile,497344-gpid,20,20
-iphone-se-2nd-gen,t-mobile,iphone-se-2nd-gen-128gb-t-mobile,497377-gpid,25,25
+iphone-se-2nd-gen,t-mobile,iphone-se-2nd-gen-128gb-t-mobile,497377-gpid,undefined,25
 iphone-se-2nd-gen,t-mobile,iphone-se-2nd-gen-256gb-t-mobile,497350-gpid,30,30
 iphone-se-2nd-gen,verizon,iphone-se-2nd-gen-64gb-verizon,497346-gpid,20,20
 iphone-se-2nd-gen,verizon,iphone-se-2nd-gen-128gb-verizon,497379-gpid,25,25
@@ -277,7 +277,7 @@ iphone-se,t-mobile,iphone-se-128gb-t-mobile,496356-gpid,,
 iphone-se,verizon,iphone-se-16gb-verizon,496147-gpid,,
 iphone-se,verizon,iphone-se-32gb-verizon,496346-gpid,,
 iphone-se,verizon,iphone-se-64gb-verizon,496148-gpid,,
-iphone-se,verizon,iphone-se-128gb-verizon,496352-gpid,,
+iphone-se,verizon,iphone-se-128gb-verizon,496352-gpid,undefined,
 iphone-se,unlocked,iphone-se-16gb-unlocked,496149-gpid,,
 iphone-se,unlocked,iphone-se-32gb-unlocked,496347-gpid,,
 iphone-se,unlocked,iphone-se-64gb-unlocked,496150-gpid,,
