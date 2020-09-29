@@ -63,11 +63,11 @@ export default () => {
   }, [])
 
 
-  // const tst = Array(100000).fill().map(() => Array(Math.floor(1000 * Math.random())).fill('#').join(' '));
+  // const tst = Array(100000).fill().map(() => `https://picsum.photos/${100 + parseInt(Math.random() * 200)}/${100 + parseInt(Math.random() * 200)}`);
 
   return (
     <App>
-      {/* <List Component={({item}) => <div style={{ border: 'solid 1px' }}>{item}</div>} list={tst}/> */}
+      {/* <List Component={({item}) => <div style={{ border: 'solid 1px' }}><img height='100%' width='100%' src={item}/></div>} list={tst}/> */}
       {/* {isLoading && <Spinner />} */}
       <GraphContainer>
         <div ref={ref}>

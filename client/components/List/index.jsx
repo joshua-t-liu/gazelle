@@ -13,8 +13,9 @@ const Row = ({ id, top, children }) => {
 }
 
 export default ({ id, list = [], Component, height = '20vh', style = {} }) => {
-  const ref = useRef(null);
-  const [state, dispatch] = useScroll(ref, list, height);
+  // const ref = useRef(null);
+  const [state, dispatch] = useScroll(list, height);
+  const { totalHeight, items } = state;
 
   return (
     <div
@@ -23,10 +24,10 @@ export default ({ id, list = [], Component, height = '20vh', style = {} }) => {
       style={{ height, width: '100%', overflowY: 'auto', ...style }}>
 
         <div
-          ref={ref}
-          style={{ position: 'relative', height: (state.totalHeight) ? `${state.totalHeight}px` : '200%' }}>
+          // ref={ref}
+          style={{ position: 'relative', height: (totalHeight) ? `${totalHeight}px` : '200%' }}>
 
-          {state.items.children.map(({ index, top }) => (
+          {items.map(({ index, top }) => (
               <Row
                 key={String(index)}
                 id={index}

@@ -1,46 +1,49 @@
 import React, { useReducer, useEffect } from 'react';
 
-function retrieve(offset, ref, heights, list, containerHeight) {
+function retrieve(offset, state) {
+  const { items: prev, heights, list, containerHeight, preLoadHeight } = state;
   let addHeight = 0;
 
-  Array.from(ref.current.children).forEach(({ id, offsetHeight, style }) => {
-    if (!heights[id]) {
-      const top = style.transform.match(/translateY\(([0-9]+)px\)/)[1];
+  prev.forEach(({ index, top }) => {
+    const ele = document.getElementById(String(index));
+    if (ele && !heights[index]) {
+      const images = ele.querySelectorAll('img');
+      const { offsetHeight } = ele;
+      let finished = true;
+      images.forEach((img) => finished = finished && img.complete);
+      if (!finished) return;
       addHeight += offsetHeight;
-      heights[id] = {
-        index: parseInt(id),
-        top: Number(top),
+      heights[index] = {
+        index,
+        top,
         height: offsetHeight,
       };
     }
-  });
+  })
 
-  const items = { children: [] };
-  let currHeight = 0;
+  const items = [];
 
   let index = getStartIndex(heights, offset);
 
   while (
-    (checkNext(items, offset, containerHeight) || items.children.length === 1)
+    (checkNext(items, offset, containerHeight, preLoadHeight) || items.length === 1)
     && heights[index]) {
-    items.children.push(heights[index]);
-    currHeight += heights[index].height;
+    items.push(heights[index]);
     index++;
   }
 
-  if (checkNext(ref.current, offset, containerHeight) && index < list.length) {
+  if (checkNext(items, offset, containerHeight, preLoadHeight) && index < list.length) {
     let top = 0;
     if (index) {
-      const { top: prevTop, height: prevHeight } = items.children[items.children.length - 1];
+      const { top: prevTop, height: prevHeight } = items[items.length - 1];
       top = prevTop + prevHeight;
     }
-    items.children.push({ index, top });
+    items.push({ index, top });
   }
 
   return {
     items,
     addHeight,
-    currHeight,
   };
 }
 
@@ -71,7 +74,7 @@ function getStartIndex(items, offset) {
   return 0;
 }
 
-function init([ref, list, height]) {
+function init([list, height, preLoadHeight = 2]) {
   const vhUnit = window.innerHeight / 100;
   const parsedHeight = height.match(/([.0-9]+)(px|vh)/);
   let containerHeight;
@@ -85,43 +88,39 @@ function init([ref, list, height]) {
   }
 
   return {
-    ref,
     list,
     heights: [],
     totalHeight: 0,
-    items: { children: [] },
+    items: [],
     offset: 0,
     containerHeight,
-    currHeight: 0,
+    originalHeight: height,
+    preLoadHeight,
   };
 }
 
 function reducer(state, action) {
-  const { items: prev, ref, list, heights, totalHeight, containerHeight } = state;
+  const { items: prev, list, totalHeight, containerHeight, originalHeight, preLoadHeight } = state;
   const { type, payload = {} } = action;
 
   const res = [];
 
   switch (type) {
     case 'reset':
-      return init([ref, list, `${containerHeight}px`]);
+      return init([list, originalHeight, preLoadHeight]);
       break;
     case 'getNext':
-      const { index = 0 } = prev.children[prev.children.length - 1] || {};
+      const { index = 0 } = prev[prev.length - 1] || {};
       if (index === list.length - 1) return state;
-      if (!checkNext(ref.current, state.offset, containerHeight)) return state;
+      if (!checkNext(prev, state.offset, containerHeight, preLoadHeight)) return state;
     case 'offset':
       const offset = (payload.offset !== undefined) ? payload.offset : state.offset;
-      const { items, addHeight, currHeight } = retrieve(offset, ref, heights, list, containerHeight);
+      const { items, addHeight } = retrieve(offset, state);
       return {
-        ref,
-        list,
-        heights,
+        ...state,
         offset,
-        containerHeight,
+        items,
         totalHeight: totalHeight + addHeight,
-        items: items,
-        currHeight,
       };
       break;
     default:
@@ -129,32 +128,23 @@ function reducer(state, action) {
   }
 }
 
-function checkNext(ele, offset, containerHeight) {
-  if (!ele) return true;
-
-  const children = ele.children;
-  const last = children[children.length - 1];
-
+function checkNext(items, offset, containerHeight, preLoadHeight) {
+  if (!items) return true;
+  const last = items[items.length - 1];
   if (!last) return true;
-
-  let top = last.top;
-  if (top === undefined) {
-    top = last.style.transform.match(/translateY\(([0-9]+)px\)/)[1];
-    top = Number(top);
-  }
-
-  return top < (offset + 2 * containerHeight);
+  return last.top < (offset + preLoadHeight * containerHeight);
 }
 
-export default (ref, list, height) => {
-  const [state, dispatch] = useReducer(reducer, [ref, list, height], init);
+export default (list, height, preLoadHeight) => {
+  const [state, dispatch] = useReducer(reducer, [list, height, preLoadHeight], init);
 
   useEffect(() => {
     window.addEventListener('resize', () => dispatch({ type: 'reset' }));
   }, [])
 
   useEffect(() => {
-    if (checkNext(ref.current, state.offset, state.containerHeight)) dispatch({ type: 'getNext' });
+    const { items, offset, containerHeight, preLoadHeight } = state;
+    if (checkNext(items, offset, containerHeight, preLoadHeight)) dispatch({ type: 'getNext' });
   }, [state.items]);
 
   return [state, dispatch];
