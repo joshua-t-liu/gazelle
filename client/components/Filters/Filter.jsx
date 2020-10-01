@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import { FieldSet, Row } from './Shared';
-import InfiniteScroll from './InfiniteScroll';
-import List from './List';
+import { Row } from '../Shared';
+import List from '../List';
 
 const CheckBox = ({ item }) => {
   const { name, checked, onChange } = item;
@@ -14,7 +13,7 @@ const CheckBox = ({ item }) => {
   )
 }
 
-const Filter = ({ category, filters, dispatch }) => {
+export default ({ category, filters, dispatch }) => {
   const [allSelected, setAllSelected] = useState(filters.size);
   const [isExpanded, setExpand] = useState(false);
 
@@ -59,20 +58,4 @@ const Filter = ({ category, filters, dispatch }) => {
           list={list} />}
     </Row>
   )
-}
-
-export default ({ filters, dispatch }) => {
-  const categories = Array.from(filters.keys());
-
-  return (
-    <FieldSet header='Filters'>
-      {categories.map((category) => (
-        <Filter
-          key={category}
-          category={category}
-          filters={filters.get(category)}
-          dispatch={dispatch} />
-      ))}
-    </FieldSet>
-  );
 }

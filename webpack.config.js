@@ -2,15 +2,19 @@ const path = require('path');
 
 module.exports = {
   mode: "production",
-  entry: "./client/app.jsx",
+  entry: {
+    bundle: "./client/app.jsx",
+    worker: "./client/components/useProcessor/worker.js",
+  },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
+    filename: "[name].js",
   },
   module: {
     rules: [
       {
         test: /\.jsx?$/,
+        exclude: /node_modules/,
         loader: "babel-loader",
         options: {
           presets: ["@babel/preset-env", "@babel/preset-react"]

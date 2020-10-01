@@ -1,4 +1,5 @@
-import { nextColor, alphabeticalSort, numericalSort, setMultiColors, uniqKey } from './helper';
+import { nextColor, alphabeticalSort, numericalSort, setMultiColors, uniqKey } from '../helper';
+
 
 function createDataSet(label, data, index, graphType, groupSize) {
   let colors = {};
@@ -56,7 +57,7 @@ function getAccumFuncs(aggregate, groups, counts) {
 }
 
 function processData(state) {
-  const { graphType, data, filters, selectedGroup, x, y, dataType, aggregate } = state;
+  const { data, graphType, filters, selectedGroup, x, y, dataType, aggregate } = state;
 
   if (!x || !y) return {};
 

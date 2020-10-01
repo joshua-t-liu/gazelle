@@ -1,33 +1,7 @@
 import React from 'react';
 
-import { FieldSet, Row, Button } from './Shared';
-
-const TYPES = [
-  {
-    title: 'Line',
-    type: 'line',
-  },
-  {
-    title: 'Scatter',
-    type: 'scatter',
-  },
-  {
-    title: 'Area',
-    type: 'area',
-  },
-  {
-    title: 'Pie',
-    type: 'pie',
-  },
-  {
-    title: 'Doughnut',
-    type: 'doughnut',
-  },
-  {
-    title: 'Bar',
-    type: 'bar',
-  }
-];
+import { FieldSet, Row, Button } from '../Shared';
+import TYPES from './Types';
 
 export default ({ graphType, dispatch }) => {
 

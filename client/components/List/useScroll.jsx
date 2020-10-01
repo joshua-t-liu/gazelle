@@ -77,10 +77,15 @@ function init([list, height, preLoadHeight = 2]) {
   let containerHeight;
 
   if (parsedHeight) {
-    if (parsedHeight[2] === 'px') {
-      containerHeight = parsedHeight[1];
-    } else if (parsedHeight[2] === 'vh') {
-      containerHeight = parsedHeight[1] * vhUnit;
+    switch (parsedHeight[2]) {
+      case 'px':
+        containerHeight = parsedHeight[1];
+        break;
+      case 'vh':
+        containerHeight = parsedHeight[1] * vhUnit;
+        break;
+      default:
+        break;
     }
   }
 
@@ -91,7 +96,6 @@ function init([list, height, preLoadHeight = 2]) {
     items: [],
     offset: 0,
     containerHeight,
-    originalHeight: height,
     preLoadHeight,
     checkNext: (items, offset) => checkNext(items, offset, containerHeight, preLoadHeight, list.length - 1),
   };
@@ -103,7 +107,7 @@ function reducer(state, action) {
 
   switch (type) {
     case 'reset':
-      return init([list, state.originalHeight, state.preLoadHeight]);
+      return init([list, payload.height, state.preLoadHeight]);
       break;
     case 'getNext':
       if (!state.checkNext(state.items, prevOffset)) return state;
@@ -134,7 +138,7 @@ export default (list, height, preLoadHeight) => {
   const [state, dispatch] = useReducer(reducer, [list, height, preLoadHeight], init);
 
   useEffect(() => {
-    window.addEventListener('resize', () => dispatch({ type: 'reset' }));
+    window.addEventListener('resize', () => dispatch({ type: 'reset', payload: { height } }));
   }, [])
 
   useEffect(() => {

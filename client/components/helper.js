@@ -18,6 +18,9 @@ const BACKGROUND_COLORS = [
   'rgba(201, 203, 207, 0.2)'
 ];
 
+const MIN_WIDTH = '768px';
+
+
 function nextColor(type, index = 0) {
   switch (type) {
     case 'color':
@@ -71,9 +74,12 @@ function uniqKey(val) {
 }
 
 export {
+  COLORS,
+  BACKGROUND_COLORS,
+  MIN_WIDTH,
   nextColor,
   alphabeticalSort,
   numericalSort,
   setMultiColors,
   uniqKey,
-}
+};

@@ -1,12 +1,11 @@
-import React, { useState, useReducer } from 'react';
+import React, { useRef, useEffect, useReducer } from 'react';
 
 import { uniqKey } from '../helper';
-import { processData } from '../chartJsDataset';
+import { open, read } from '../IndexedDB';
 
 function initial() {
   return ({
     graphType: 'line',
-    data: {},
     dataType: {},
     filters: new Map(),
     groups: new Map(),
@@ -14,35 +13,18 @@ function initial() {
     x: null,
     y: null,
     aggregate: 'Sum',
+    processed: false,
   });
-}
-
-function init(data, type) {
-  const filters = new Map();
-  const groups = new Map();
-  const columns = Object.keys(data[0]);
-
-  columns.forEach((col) => {
-    filters.set(col, new Map());
-    groups.set(col, false);
-
-    data.forEach((record) => filters.get(col).set(uniqKey(record[col]), true));
-  });
-
-  return {
-    filters,
-    groups,
-  };
 }
 
 function reducer(state, action) {
   const { type, payload } = action;
-  const { data, category, name, checked, group } = payload;
-  let nextState;
+  const { category, name, checked, group } = payload;
+  let nextState, results;
 
   switch (type) {
     case 'init':
-      nextState = { ...initial(), ...payload, ...init(data) };
+      nextState = { ...initial(), ...payload };
       nextState.selectedGroup.forEach((group) => nextState.groups.set(group, true));
       break;
     case 'filters':
@@ -66,17 +48,45 @@ function reducer(state, action) {
     case 'graph':
       nextState = payload;
       break;
+    case 'results':
+      results = payload.results;
+      break;
     default:
       throw new Error();
   }
-
-  const results = processData({ ...state, ...nextState });
 
   return {
     ...state,
     ...nextState,
     results,
+    processed: type === 'results',
   }
 }
 
-export default () => useReducer(reducer, null, initial);
+export default (setIsLoading) => {
+  const [state, dispatch] = useReducer(reducer, null, initial);
+  const worker = useRef(new Worker('worker.js'));
+
+  useEffect(() => {
+    worker.current.onerror = function(event) {
+      console.error(event);
+    }
+    worker.current.onmessage = function(event) {
+      open()
+      .then(() => read('output'))
+      .then((results) => {
+        dispatch({ type: 'results', payload: { results } });
+        setIsLoading(false);
+      })
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!state.processed && state.x && state.y) {
+      setIsLoading(true);
+      worker.current.postMessage(state);
+    }
+  }, [state]);
+
+  return [state, dispatch];
+};

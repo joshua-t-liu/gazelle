@@ -1,11 +1,19 @@
 import React, { FC } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 
+const appear = keyframes`
+  to {
+    opacity: 1;
+  }
+`;
+
 const SpinnerWrapper = styled.div`
   position: fixed;
   top: 50%;
   left 50%;
   transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: ${appear} 0s 0.1s linear forwards;
 `;
 
 const spin = keyframes`

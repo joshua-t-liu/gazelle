@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-
+import React from 'react';
 import useScroll from './useScroll';
 
-const Row = ({ id, top, children }) => {
+const Row = ({ id, top, children, ref }) => {
   return (
     <div
+      ref={ref}
       id={id}
       style={{ position: 'absolute', transform: `translateY(${top}px)` }}>
         {children}
@@ -25,15 +25,15 @@ export default ({ id, list = [], Component, height = '20vh', style = {} }) => {
         <div
           style={{ position: 'relative', height: `${totalHeight}px` }}>
 
-          {items.map(({ index, top }) => (
-              <Row
-                key={String(index)}
-                id={index}
-                top={top}>
-                <Component
-                  item={list[index]} />
-              </Row>
-              ))}
+            {items.map(({ index, top }) => (
+                <Row
+                  key={String(index)}
+                  id={index}
+                  top={top}>
+                  <Component
+                    item={list[index]} />
+                </Row>
+                ))}
 
         </div>
 

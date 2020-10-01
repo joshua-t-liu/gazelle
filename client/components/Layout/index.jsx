@@ -1,23 +1,7 @@
 import React, { useState } from 'react';
 
-import { FieldSet, Row , Button} from './Shared';
-
-const Position = ({ state, onClick }) => {
-  return (
-    <Row subheader={'Position'}>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {['Top', 'Right', 'Bottom', 'Left'].map((val) => (
-          <Button
-            className={state && val.toLowerCase() === state.position && 'active'}
-            id={val.toLowerCase()}
-            onClick={onClick}>
-              {val}
-          </Button>
-        ))}
-      </div>
-    </Row>
-  )
-}
+import { FieldSet, Row , Button} from '../Shared';
+import Position from './Position';
 
 const Legend = ({ subheader, state, dispatch }) => {
   const [isExpanded, setExpand] = useState(false);
