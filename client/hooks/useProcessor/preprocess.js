@@ -1,4 +1,4 @@
-import { uniqKey } from '../helper';
+import { uniqKey } from '../../helper';
 
 export default function preprocess(data) {
   const filters = new Map();

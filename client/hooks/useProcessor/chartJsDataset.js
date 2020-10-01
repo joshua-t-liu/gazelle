@@ -1,5 +1,4 @@
-import { nextColor, alphabeticalSort, numericalSort, setMultiColors, uniqKey } from '../helper';
-
+import { nextColor, alphabeticalSort, numericalSort, setMultiColors, uniqKey } from '../../helper';
 
 function createDataSet(label, data, index, graphType, groupSize) {
   let colors = {};
@@ -54,55 +53,6 @@ function getAccumFuncs(aggregate, groups, counts) {
   }
 
   return accumFuncs;
-}
-
-function processData(state) {
-  const { data, graphType, filters, selectedGroup, x, y, dataType, aggregate } = state;
-
-  if (!x || !y) return {};
-
-  const groups = new Map();
-  const counts = new Map();
-  const labels = new Set();
-
-  const accumFuncs = getAccumFuncs(aggregate, groups, counts);
-
-  filterData(data, filters, x, y, (record) => {
-    const key = Array.from(selectedGroup).map((val) => record[val]).join(',');
-    const xKey = uniqKey(record[x]);
-    labels.add(xKey);
-
-    switch (graphType) {
-      case 'scatter':
-        if (!groups.get(key)) groups.set(key, []);
-        groups.get(key).push({ x: record[x], y: record[y] });
-        break;
-      case 'line':
-      case 'area':
-      case 'bar':
-      case 'pie':
-      case 'doughnut':
-        [groups, counts].forEach((counter) => {
-          if (!counter.get(key)) counter.set(key, new Map());
-          const prev =  counter.get(key).get(xKey);
-          const func = accumFuncs.get(counter);
-          counter.get(key).set(xKey, func(prev, record[y]));
-        });
-        break;
-      case 'bubble':
-      case 'radar':
-      default:
-        return {};
-    }
-  });
-
-  aggregateData(aggregate, graphType, groups, counts);
-
-  const datasets = createDataSets(groups, labels, graphType);
-
-  const sortedLabels = sortDataSets(labels, datasets, dataType[x], graphType);
-
-  return { datasets, labels: sortedLabels };
 }
 
 function aggregateData(aggregate, graphType, groups, counts) {
@@ -195,6 +145,51 @@ function filterData(data, filters, x, y, cb) {
   });
 }
 
-export {
-  processData
-};
+export default function processData(state) {
+  const { data, graphType, filters, selectedGroup, x, y, dataType, aggregate } = state;
+
+  if (!x || !y) return {};
+
+  const groups = new Map();
+  const counts = new Map();
+  const labels = new Set();
+
+  const accumFuncs = getAccumFuncs(aggregate, groups, counts);
+
+  filterData(data, filters, x, y, (record) => {
+    const key = Array.from(selectedGroup).map((val) => record[val]).join(',');
+    const xKey = uniqKey(record[x]);
+    labels.add(xKey);
+
+    switch (graphType) {
+      case 'scatter':
+        if (!groups.get(key)) groups.set(key, []);
+        groups.get(key).push({ x: record[x], y: record[y] });
+        break;
+      case 'line':
+      case 'area':
+      case 'bar':
+      case 'pie':
+      case 'doughnut':
+        [groups, counts].forEach((counter) => {
+          if (!counter.get(key)) counter.set(key, new Map());
+          const prev =  counter.get(key).get(xKey);
+          const func = accumFuncs.get(counter);
+          counter.get(key).set(xKey, func(prev, record[y]));
+        });
+        break;
+      case 'bubble':
+      case 'radar':
+      default:
+        return {};
+    }
+  });
+
+  aggregateData(aggregate, graphType, groups, counts);
+
+  const datasets = createDataSets(groups, labels, graphType);
+
+  const sortedLabels = sortDataSets(labels, datasets, dataType[x], graphType);
+
+  return { datasets, labels: sortedLabels };
+}

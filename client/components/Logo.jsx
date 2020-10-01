@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { COLORS, BACKGROUND_COLORS, MIN_WIDTH, nextColor } from './helper';
+import { COLORS, BACKGROUND_COLORS, MIN_WIDTH, nextColor } from '../helper';
 
 const Logo = styled.div`
   padding: 0.1em;

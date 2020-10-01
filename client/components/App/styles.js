@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { MIN_WIDTH } from '../helper';
+import { MIN_WIDTH } from '../../helper';
 
 const App = styled.div`
   display: flex;

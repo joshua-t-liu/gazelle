@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 
 import { FieldSet, Row, Button } from '../Shared';
-import { open, update } from '../IndexedDB';
-import preprocess from '../useProcessor/preprocess';
+import { open, update } from '../../IndexedDB';
+import preprocess from '../../hooks/useProcessor/preprocess';
 import formatcsv from './formatcsv';
 
 export default ({ setIsLoading, dispatch }) => {

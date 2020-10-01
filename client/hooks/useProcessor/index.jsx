@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useReducer } from 'react';
 
-import { uniqKey } from '../helper';
-import { open, read } from '../IndexedDB';
+import { open, read } from '../../IndexedDB';
 
 function initial() {
   return ({

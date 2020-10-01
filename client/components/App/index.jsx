@@ -10,9 +10,9 @@ import Variable from '../Variable';
 import Filters from '../Filters';
 import GroupBy from '../GroupBy';
 import Layout from '../Layout';
-import useProcessor from '../useProcessor';
-import useGraphOpt from '../useGraphOpt';
-import useExample from '../useExample';
+import useProcessor from '../../hooks/useProcessor';
+import useGraphOpt from '../../hooks/useGraphOpt';
+import useExample from '../../hooks/useExample';
 
 export default () => {
   const [isLoading, setIsLoading] = useState(false);

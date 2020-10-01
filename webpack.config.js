@@ -4,7 +4,7 @@ module.exports = {
   mode: "production",
   entry: {
     bundle: "./client/app.jsx",
-    worker: "./client/components/useProcessor/worker.js",
+    worker: "./client/hooks/useProcessor/worker.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),

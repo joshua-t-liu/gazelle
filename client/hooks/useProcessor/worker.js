@@ -1,6 +1,6 @@
-import { processData } from './ChartJsDataset.js';
+import processData from './ChartJsDataset.js';
 
-import { open, read, update } from '../IndexedDB';
+import { open, read, update } from '../../IndexedDB';
 
 function openDb() {
   return new Promise((resolve, reject) => {
