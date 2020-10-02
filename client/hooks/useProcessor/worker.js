@@ -1,4 +1,4 @@
-import processData from './ChartJsDataset.js';
+import { process } from './processor';
 
 import { open, read, update } from '../../IndexedDB';
 
@@ -17,7 +17,7 @@ function openDb() {
 onmessage = function(event) {
   openDb()
   .then(() => read())
-  .then((data) => processData({ ...event.data, data }))
+  .then((data) => process({ ...event.data, data }))
   .then((results) => update(results, 'output'))
   .then(() => postMessage(null));
 };

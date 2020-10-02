@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { open, update } from '../IndexedDB';
-import preprocess from './useProcessor/preprocess';
+import { preProcess } from './useProcessor/processor';
 
 const getModelSize = (model) => {
   return model.match(/(.*[^0-9]\b)([0-9]+gb).*/)[2];
@@ -30,15 +30,13 @@ export default (cb) => {
       .then(() => update(data))
       .then(() => cb(
         {
-          ...preprocess(data),
+          ...preProcess(data),
           dataType,
           x: 'price1',
           y: 'price2',
           selectedGroup: new Set(['carrier'])
         })
       );
-
-      // cb({ data, dataType, x: 'price1', y: 'price2', selectedGroup: new Set(['carrier']) });
     });
   }, []);
 };

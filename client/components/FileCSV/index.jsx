@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 
 import { FieldSet, Row, Button } from '../Shared';
 import { open, update } from '../../IndexedDB';
-import preprocess from '../../hooks/useProcessor/preprocess';
+import { preProcess } from '../../hooks/useProcessor/processor';
 import formatcsv from './formatcsv';
 
 export default ({ setIsLoading, dispatch }) => {
@@ -24,7 +24,7 @@ export default ({ setIsLoading, dispatch }) => {
         return update(data);
       })
       .then(() => {
-        dispatch({ type: 'init', payload: { ...preprocess(data), dataType } });
+        dispatch({ type: 'init', payload: { ...preProcess(data), dataType } });
         setIsLoading(false);
       });
     }
