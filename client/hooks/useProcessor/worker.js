@@ -18,6 +18,6 @@ onmessage = function(event) {
   openDb()
   .then(() => read())
   .then((data) => process({ ...event.data, data }))
-  .then((results) => update(results, 'output'))
+  .then((results) => update(results, 'data', 'output'))
   .then(() => postMessage(null));
 };

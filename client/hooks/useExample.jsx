@@ -28,15 +28,13 @@ export default (cb) => {
 
       open()
       .then(() => update(data))
-      .then(() => cb(
-        {
-          ...preProcess(data),
-          dataType,
-          x: 'price1',
-          y: 'price2',
-          selectedGroup: new Set(['carrier'])
-        })
-      );
+      .then(() => cb({
+        ...preProcess(data),
+        dataType,
+        x: 'price1',
+        y: 'price2',
+        selectedGroup: new Set(['carrier'])
+      }));
     });
   }, []);
 };

@@ -11,7 +11,7 @@ function initial() {
     selectedGroup: new Set(),
     x: null,
     y: null,
-    aggregate: 'Sum',
+    aggregate: 'None',
     processed: false,
   });
 }
@@ -72,7 +72,7 @@ export default (setIsLoading) => {
     }
     worker.current.onmessage = function(event) {
       open()
-      .then(() => read('output'))
+      .then(() => read('data', 'output'))
       .then((results) => {
         dispatch({ type: 'results', payload: { results } });
         setIsLoading(false);

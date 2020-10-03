@@ -1,36 +1,74 @@
 import { uniqKey } from '../../helper';
 import DataSets from './DataSets';
+import { open, read, update } from '../../IndexedDB';
 
 function checkFilter(filters, record, col) {
   return filters.get(col).get(uniqKey(record[col]));
 }
 
-function filterData(data, filters, x, y, cb) {
+function filterData(state, datasets, cb) {
   if (!cb) return null;
+  const { data, filters} = state;
   const columns = Object.keys(data[0]);
 
   data.forEach((record) => {
     if (!columns.every((col) => checkFilter(filters, record, col))) return;
-    cb(record);
+    cb(record, state, datasets);
   });
 }
 
-function process(state) {
-  const { data, graphType, filters, selectedGroup, x, y, dataType, aggregate } = state;
+function getDataSets(state) {
+  const { graphType, x, dataType, aggregate } = state;
 
+  return (
+    open()
+    .then(() => read('datasets'))
+    .then((result) => {
+      if (!result) return update(new DataSets(graphType, aggregate, dataType[x]), 'datasets');
+      return new DataSets(graphType, aggregate, dataType[x], result.datasets, result.labels);
+    })
+  )
+}
+
+function processAll(resolve, reject, state) {
+  let before = new Date();
+  let dataSets;
+
+  getDataSets(state)
+  .then((result) => dataSets = result)
+  .then(() => filterData(state, dataSets, processAllCb))
+  .then(() => {
+    console.log(new Date() - before);
+    resolve(dataSets.getChartJsDataSets());
+  })
+  .catch((err) => reject(err));
+}
+
+function processAllCb(record, state, dataSets) {
+  const { selectedGroup, x, y } = state;
+
+  const groupKey = Array.from(selectedGroup).map((val) => record[val]).join(',');
+  const { [x]: xVal, [y]: yVal } = record;
+  const xKey = uniqKey(xVal);
+  dataSets.addLabel(xVal);
+  dataSets.addData(groupKey, xVal, yVal);
+}
+
+function processFilteredData(record, state, dataSets) {
+
+}
+
+function process(state, filter, val, filterStatus) {
+  const { x, y } = state;
   if (!x || !y) return {};
 
-  const dataSets = new DataSets(graphType, aggregate, dataType[x]);
+  return new Promise((resolve, reject) => {
+    if (filter) {
 
-  filterData(data, filters, x, y, (record) => {
-    const groupKey = Array.from(selectedGroup).map((val) => record[val]).join(',');
-    const { [x]: xVal, [y]: yVal } = record;
-    const xKey = uniqKey(xVal);
-    dataSets.addLabel(xVal);
-    dataSets.addData(groupKey, xVal, yVal);
-  });
-
-  return dataSets.getChartJsDataSets();
+    } else {
+      processAll(resolve, reject, state);
+    }
+  })
 }
 
 function preProcess(data) {

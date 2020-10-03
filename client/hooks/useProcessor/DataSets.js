@@ -1,48 +1,20 @@
 import { nextColor, alphabeticalSort, numericalSort, setMultiColors } from '../../helper';
 import DataSet from './DataSet';
 
-function DataSets(graphType, aggregate, dataType) {
-  this.datasets = new Map();
-  this.labels = new Set();
+function DataSets(graphType, aggregate, dataType, datasets, labels) {
   this.graphType = graphType;
   this.aggregate = aggregate;
   this.dataType = dataType;
-}
-
-DataSets.prototype.getChartJsDataSets = function() {
-  this.aggregateData();
-  const processedData = this.formatData();
-  const labels = this.sortDataSets(this.dataType, processedData);
-  return { datasets: processedData, labels };
-}
-
-DataSets.prototype.formatData = function() {
-  const datasets = [];
-  let index = 0;
-
-  this.datasets.forEach((dataset, label) => {
-    let updatedData;
-    switch (this.graphType) {
-      case 'scatter':
-        updatedData = dataset.data;
-        break;
-      case 'line':
-      case 'area':
-        updatedData = Array.from(this.labels)
-                        .filter((x) => dataset.getDataPoint(x) !== undefined)
-                        .map((x) => ({ x, y: dataset.getDataPoint(x) }));
-        break;
-      case 'bar':
-      case 'pie':
-      case 'doughnut':
-        updatedData = Array.from(this.labels).map((x) =>  dataset.getDataPoint(x));
-      default:
-        break;
-    }
-    datasets.push(this.createDataSet(label, updatedData, index++));
-  })
-
-  return datasets;
+  switch (arguments.length) {
+    case 5:
+      this.datasets = datasets;
+      this.labels = labels;
+      break;
+    default:
+      this.datasets = new Map();
+      this.labels = new Set();
+      break;
+  }
 }
 
 DataSets.prototype.addLabel = function(label) {
@@ -63,16 +35,51 @@ DataSets.prototype.addData = function(groupName, x, y) {
   dataset.addData(x, y);
 }
 
-DataSets.prototype.aggregateData = function() {
-  if (this.graphType === 'scatter') return;
-  this.datasets.forEach((dataset, group) => {
-    dataset.aggregateData(this.aggregate);
-  });
+DataSets.prototype.getChartJsDataSets = function() {
+  const datasets = this.formatData();
+  const labels = this.formatLabels(datasets);
+  return { datasets, labels };
+}
+
+DataSets.prototype.formatData = function() {
+  const datasets = [];
+  let index = 0;
+
+  this.datasets.forEach((dataset, label) => {
+    let data = dataset.aggregateData();
+
+    switch (this.graphType) {
+      case 'scatter':
+      case 'line':
+      case 'area':
+        data = Array.from(this.labels)
+                        .filter((x) => data.get(x) !== undefined)
+                        .map((x) => {
+                          const y = data.get(x);
+                          if (Array.isArray(y)) {
+                            return y.map((y) => ({ x, y }));
+                          }
+                          return ({ x, y });
+                        });
+        break;
+      case 'bar':
+      case 'pie':
+      case 'doughnut':
+        data = Array.from(this.labels).map((x) =>  data.get(x));
+      default:
+        break;
+    }
+    datasets.push(this.createDataSet(label, data.flat(), index++));
+  })
+
+  return datasets;
 }
 
 DataSets.prototype.createDataSet = function(label, data, index) {
   let colors = {};
   let fill = false;
+  const color = nextColor('color', index);
+  const background = nextColor('background', index);
 
   switch (this.graphType) {
     case 'area':
@@ -92,11 +99,11 @@ DataSets.prototype.createDataSet = function(label, data, index) {
   return {
     label,
     fill,
-    borderColor: nextColor('color', index),
-    backgroundColor: nextColor('background', index),
+    borderColor: color,
+    backgroundColor: background,
     borderWidth: 1,
-    pointBackgroundColor: nextColor('background', index),
-    pointBorderColor: nextColor('color', index),
+    pointBackgroundColor: background,
+    pointBorderColor: color,
     pointBorderWidth: 1,
     lineTension: 0,
     data,
@@ -104,9 +111,9 @@ DataSets.prototype.createDataSet = function(label, data, index) {
   };
 }
 
-DataSets.prototype.sortDataSets = function(dataType, datasets) {
+DataSets.prototype.formatLabels = function(datasets) {
+  const sortFunc = (this.dataType === 'number') ? numericalSort : alphabeticalSort;
   let sortedLabels;
-  const sortFunc = (dataType === 'number') ? numericalSort : alphabeticalSort;
 
   switch (this.graphType) {
     case 'line':
