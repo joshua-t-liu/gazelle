@@ -1,5 +1,7 @@
 let db;
 
+const STORES = ['data', 'datasets', 'labels'];
+
 function open() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('chartsy', 1);
@@ -15,8 +17,7 @@ function open() {
 
     req.onupgradeneeded  = function(event) {
       const db = event.target.result;
-      const data = db.createObjectStore('data');
-      const dataSets = db.createObjectStore('datasets');
+      STORES.forEach((store) => db.createObjectStore(store));
     }
   })
 }
@@ -76,17 +77,49 @@ function update(data, storeName = 'data', key = 'raw') {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([storeName], 'readwrite');
     const objectStore = transaction.objectStore(storeName);
-    const req = objectStore.get(key);
+
+    const req = objectStore.put(data, key);
+    req.onerror = function(event) {
+      reject(event.target.errorCode);
+    }
+
+    req.onsuccess = function() {
+      resolve(data);
+    }
+  })
+}
+
+function updateMultiple(data, storeName) {
+  return new Promise((resolve, reject) => {
+    const txn = db.transaction([storeName], 'readwrite');
+    const objectStore = txn.objectStore(storeName);
+
+    data.forEach((val, key) => {
+      const req = objectStore.put(val, key);
+    })
+
+    txn.onerror = function(event) {
+      reject(event.target.errorCode);
+    }
+
+    txn.oncomplete = function() {
+      resolve(data);
+    }
+  })
+}
+
+function readAll(storeName) {
+  return new Promise((resolve, reject) => {
+    const txn = db.transaction([storeName]);
+    const store = txn.objectStore(storeName);
+
+    const req = store.getAll();
+    req.onerror = function (event) {
+      reject(event.target.errorCode);
+    }
+
     req.onsuccess = function(event) {
-
-      const updReq = objectStore.put(data, key);
-      updReq.onerror = function(event) {
-        reject(event.target.errorCode)
-      }
-
-      updReq.onsuccess = function() {
-        resolve(true);
-      }
+      resolve(event.target.result);
     }
   })
 }
@@ -94,6 +127,8 @@ function update(data, storeName = 'data', key = 'raw') {
 export {
   open,
   read,
+  readAll,
   write,
   update,
+  updateMultiple,
 };

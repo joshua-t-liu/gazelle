@@ -28,6 +28,7 @@ function reducer(state, action) {
       break;
     case 'filters':
       state.filters.get(category).set(name, checked);
+      nextState = { filterCategory: category, filterValue: name, filterStatus: checked };
       break;
     case 'filters-all':
       state.filters.get(category).forEach((_, val) => state.filters.get(category).set(val, checked));
@@ -49,6 +50,7 @@ function reducer(state, action) {
       break;
     case 'results':
       results = payload.results;
+      nextState = { filterCategory: null, filterValue: null, filterStatus: null };
       break;
     default:
       throw new Error();

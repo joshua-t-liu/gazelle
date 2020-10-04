@@ -5,15 +5,12 @@ function DataSets(graphType, aggregate, dataType, datasets, labels) {
   this.graphType = graphType;
   this.aggregate = aggregate;
   this.dataType = dataType;
-  switch (arguments.length) {
-    case 5:
-      this.datasets = datasets;
-      this.labels = labels;
-      break;
-    default:
-      this.datasets = new Map();
-      this.labels = new Set();
-      break;
+  this.datasets = new Map();
+  this.labels = (labels) ? labels : new Set();
+  if (datasets) {
+    datasets.forEach((dataset) =>
+    this.datasets.set(dataset.groupName,
+      new DataSet(dataset.groupName, graphType, aggregate, dataset.counts, dataset.data)));
   }
 }
 
@@ -24,7 +21,7 @@ DataSets.prototype.addLabel = function(label) {
 DataSets.prototype.getGroup = function(groupName) {
   if (this.datasets.get(groupName)) return this.datasets.get(groupName);
 
-  const dataset = new DataSet(this.graphType, this.aggregate);
+  const dataset = new DataSet(groupName, this.graphType, this.aggregate);
   this.datasets.set(groupName, dataset);
 
   return dataset;

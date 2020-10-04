@@ -1,12 +1,17 @@
-function DataSet(graphType, aggregate) {
+function DataSet(groupName, graphType, aggregate, counts, data) {
+  this.groupName = groupName;
   this.graphType = graphType;
   this.aggregate = aggregate;
-  this.accumFun = getAccumFuncs(aggregate);
-  this.counts = new Map();
-  this.data = new Map();
+  // this.accumFun = getAccumFuncs(aggregate);
+  this.counts = (counts) ? counts : new Map();
+  this.data = (data) ? data : new Map();
 }
 
 DataSet.countsFunc = getAccumFuncs('Count');
+
+DataSet.prototype.toString = function() {
+  return JSON.stringify({ counts: this.counts, data: this.data });
+}
 
 DataSet.prototype.aggregateData = function() {
   let aggrData;
@@ -35,19 +40,23 @@ DataSet.prototype.getDataPoint = function(x) {
 
 DataSet.prototype.addData = function(x, y) {
   let prevVal =  this.data.get(x);
-  this.data.set(x, this.accumFun(prevVal, y));
+  this.data.set(x, getAccumFuncs(this.aggregate)(prevVal, y));
 
   prevVal = this.counts.get(x) || 0;
   this.counts.set(x, DataSet.countsFunc(prevVal, y));
 }
 
-DataSet.prototype.adjustData = function(filter, x) {
+DataSet.prototype.adjustData = function(x, val, isApplied = true) {
+  const sign = (-1) ** isApplied;
+  const currVal = this.data.get(x);
   switch (this.aggregate) {
     case 'None':
       break;
     case 'Sum':
+      this.data.set(x, currVal + (sign * currVal));
       break;
     case 'Average':
+      this.data.set(x, currVal + (sign * currVal));
       break;
     case 'Count':
       break;

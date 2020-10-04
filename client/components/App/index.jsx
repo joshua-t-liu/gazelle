@@ -33,7 +33,7 @@ export default () => {
       {isLoading && <Spinner />}
       <GraphContainer>
         <div ref={ref}>
-          <Logo name='Chartsy' />
+          <Logo name='CHARTSY' />
         </div>
         <Graph
           height={offsetHeight}
