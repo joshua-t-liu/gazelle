@@ -56,15 +56,16 @@ DataSets.prototype.formatData = function() {
       case 'scatter':
       case 'line':
       case 'area':
-        data = Array.from(this.labels)
-                        .filter((x) => data.get(x) !== undefined)
-                        .map((x) => {
-                          const y = data.get(x);
-                          if (Array.isArray(y)) {
-                            return y.map((y) => ({ x, y }));
-                          }
-                          return ({ x, y });
-                        });
+        data = (
+          Array.from(this.labels)
+          .filter((x) => data.get(x) !== undefined)
+          .map((x) => {
+            const y = data.get(x);
+            if (Array.isArray(y)) {
+              return y.map((y) => ({ x, y }));
+            }
+            return ({ x, y });
+          }));
         break;
       case 'bar':
       case 'pie':
