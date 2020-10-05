@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { open, update } from '../IndexedDB';
+import { create, update, write } from '../IndexedDB';
 import { preProcess } from './useProcessor/processor';
 
 const getModelSize = (model) => {
@@ -26,8 +26,8 @@ export default (cb) => {
         datetime: 'date',
       }
 
-      open()
-      .then(() => update(data))
+      create(Object.keys(data[0]))
+      .then(() => write(data))
       .then(() => cb({
         ...preProcess(data),
         dataType,

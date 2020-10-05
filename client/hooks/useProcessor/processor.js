@@ -1,13 +1,16 @@
 import { uniqKey } from '../../helper';
 import DataSets from './DataSets';
-import { open, read, readAll, update, updateMultiple } from '../../IndexedDB';
+import { read, readAll, update, updateMultiple, getByIndex } from '../../IndexedDB';
 
 function checkFilter(filters, record, col) {
   return filters.get(col).get(uniqKey(record[col]));
 }
 
-function filterData(state, datasets, cb) {
-  if (!cb) return null;
+function filterData(state, datasets) {
+  if (state.filterCategory) {
+    processFilteredDataCb(state, datasets);
+    return;
+  }
 
   const { data, filters, selectedGroup, x, y } = state;
   const columns = Object.keys(data[0]);
@@ -19,38 +22,27 @@ function filterData(state, datasets, cb) {
     const { [x]: xVal, [y]: yVal } = record;
     const xKey = uniqKey(xVal);
 
-    cb(record, groupKey, xKey, yVal, state, datasets);
+    processAllCb(record, groupKey, xKey, yVal, state, datasets);
   });
 }
 
 function getDataSets(state) {
-  const { graphType, x, dataType, aggregate } = state;
-  return (
-    open()
-    .then(() => Promise.all([readAll('datasets'), read('labels')]))
-    .then(([datasets, labels]) => {
-      if (!datasets.length) return new DataSets(graphType, aggregate, dataType[x]);
-      return new DataSets(graphType, aggregate, dataType[x], datasets, labels);
-    })
-  )
-}
+  return new Promise((resolve, reject) => {
+    const { graphType, x, dataType, aggregate, filterCategory } = state;
 
-function processAll(resolve, reject, state) {
-  let before = new Date();
-  let dataSets;
-
-  getDataSets(state)
-  .then((result) => dataSets = result)
-  .then(() => filterData(state, dataSets, processAllCb))
-  .then(() => Promise.all([
-    updateMultiple(dataSets.datasets, 'datasets'),
-    update(dataSets.labels, 'labels'),
-  ]))
-  .then(() => {
-    console.log(new Date() - before);
-    resolve(dataSets.getChartJsDataSets());
+    if (filterCategory) {
+      Promise.all([readAll('datasets'), read('labels')])
+      .then(([datasets, labels]) => {
+        if (!datasets.length) {
+          resolve(new DataSets(graphType, aggregate, dataType[x]));
+        } else {
+          resolve(new DataSets(graphType, aggregate, dataType[x], datasets, labels));
+        }
+      })
+    } else {
+      resolve(new DataSets(graphType, aggregate, dataType[x]));
+    }
   })
-  .catch((err) => reject(err));
 }
 
 function processAllCb(record, groupKey, xKey, yVal, state, dataSets) {
@@ -58,38 +50,42 @@ function processAllCb(record, groupKey, xKey, yVal, state, dataSets) {
   dataSets.addData(groupKey, xKey, yVal);
 }
 
-function processFilteredDataCb(record, groupKey, xKey, yVal, state, dataSets) {
-  const { filterCategory, filterValue, filterStatus } = state;
-  const { [filterCategory]: filtVal,  } = record;
-}
+function processFilteredDataCb(state, datasets) {
+  const { filterCategory, filterValue, filterStatus, dataType } = state;
 
-function processFilteredData(resolve, reject, state) {
-  let before = new Date();
-  let dataSets;
+  let value = filterValue;
 
-  getDataSets(state).then((result) => dataSets = result)
-  .then(() => filterData(state, dataSets, processFilteredDataCb))
-  .then(() => Promise.all([
-    updateMultiple(dataSets.datasets, 'datasets'),
-    update(dataSets.labels, 'labels'),
-  ]))
-  .then(() => {
-    resolve(dataSets.getChartJsDataSets());
-  })
-  .catch((err) => reject(err));
+  if (dataType[filterCategory] === 'number') {
+    value = Number(filterValue);
+  }
+
+  getByIndex('raw', filterCategory, value)
+  .then((results) => console.log(results))
+  .catch((err) => console.log(err));
 }
 
 function process(state) {
-  const { x, y, filterCategory } = state;
+  const { x, y } = state;
 
   if (!x || !y) return {};
 
   return new Promise((resolve, reject) => {
-    if (filterCategory) {
-      processFilteredData(resolve, reject, state);
-    } else {
-      processAll(resolve, reject, state);
-    }
+    let before = new Date();
+    let dataSets;
+
+    getDataSets(state)
+    .then((result) => dataSets = result)
+    .then(() => filterData(state, dataSets))
+    .then(() => {
+      Promise.all([
+        updateMultiple(dataSets.datasets, 'datasets'),
+        update(dataSets.labels, 'labels'),
+      ]);
+
+      console.log(new Date() - before);
+      resolve(dataSets.getChartJsDataSets());
+    })
+    .catch((err) => reject(err));
   })
 }
 

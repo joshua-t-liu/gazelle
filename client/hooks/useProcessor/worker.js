@@ -1,10 +1,12 @@
 import { process } from './processor';
 
-import { open, read, update } from '../../IndexedDB';
+import { open, isOpen, readAll, update } from '../../IndexedDB';
 
 function openDb() {
   return new Promise((resolve, reject) => {
-    if (self.db) return resolve(self.db);
+    if (self.db) {
+      if (isOpen()) return resolve(self.db);
+    }
     open()
     .then((db) => {
       self.db = db;
@@ -16,8 +18,8 @@ function openDb() {
 
 onmessage = function(event) {
   openDb()
-  .then(() => read())
+  .then(() => readAll('raw'))
   .then((data) => process({ ...event.data, data }))
-  .then((results) => update(results, 'data', 'output'))
+  .then((results) => update(results, 'processed'))
   .then(() => postMessage(null));
 };

@@ -73,8 +73,7 @@ export default (setIsLoading) => {
       console.error(event);
     }
     worker.current.onmessage = function(event) {
-      open()
-      .then(() => read('data', 'output'))
+      read('processed')
       .then((results) => {
         dispatch({ type: 'results', payload: { results } });
         setIsLoading(false);

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 
 import { FieldSet, Row, Button } from '../Shared';
-import { open, update } from '../../IndexedDB';
+import { create, write } from '../../IndexedDB';
 import { preProcess } from '../../hooks/useProcessor/processor';
 import formatcsv from './formatcsv';
 
@@ -16,8 +16,8 @@ export default ({ setIsLoading, dispatch }) => {
     reader.onload = function(event) {
       const { data, dataType } = formatcsv(event.target.result);
 
-      open()
-      .then(() => update(data))
+      create(Object.keys(data[0]))
+      .then(() => write(data))
       .then(() => {
         dispatch({ type: 'init', payload: { ...preProcess(data), dataType } });
         setIsLoading(false);
