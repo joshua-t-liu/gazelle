@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Chart from 'chart.js';
 import { Graph } from './styles';
-import { getChartJsGraphType, getChartJsScales, getChartJsDataType, showLegend } from './chartJSHelper';
+import { createChart, getChartJsGraphType, getChartJsScales, getChartJsDataType, showLegend, groupChanged, copyData } from './chartJSHelper';
 
-export default ({ height, layoutState, graphType, data, dataType, x, y, dispatch }) => {
+export default ({ height, layoutState, graphType, data, dataType, x, y, processed, dispatch }) => {
   const [chart, setChart] = useState(null);
   const ref = useRef(null);
 
@@ -15,29 +15,35 @@ export default ({ height, layoutState, graphType, data, dataType, x, y, dispatch
   useEffect(() => {
     if (!chart) return;
 
-    chart.destroy();
-    const ctx = ref.current.getContext('2d');
+    let reset = false;
+    if (processed) {
+      reset = groupChanged(chart.data && chart.data.datasets, data && data.datasets);
+      reset = reset || (chart.config.type !== getChartJsGraphType(graphType) && processed);
+    }
+    reset = reset || !data || (data && !data.datasets.length);
 
-    const type = getChartJsGraphType(graphType);
-    const xType = getChartJsDataType(dataType[x], graphType);
-    const scales = getChartJsScales(graphType, xType, x, y);
-    const legend = showLegend(data, graphType);
+    if (reset) {
+      chart.destroy();
+      const ctx = ref.current.getContext('2d');
+      const xType = getChartJsDataType(dataType[x], graphType);
+      const legend = showLegend(data, graphType);
 
-    setChart(new Chart(ctx, {
-      type: type,
-      data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales,
-        layout: {
-          // padding: 24,
-        },
-        title: layoutState.title,
-        legend: Object.assign(layoutState.legend, legend),
-      }
-    }));
-  }, [data])
+      setChart(
+        createChart(
+          ctx,
+          getChartJsGraphType(graphType),
+          copyData(data),
+          getChartJsScales(graphType, xType, x, y),
+          layoutState.title,
+          Object.assign(layoutState.legend, legend)
+          ));
+
+    } else if (data) {
+      chart.data = copyData(data);
+      chart.update(0);
+    }
+
+  }, [data, processed])
 
   useEffect(() => {
     const legend = showLegend(data, graphType);

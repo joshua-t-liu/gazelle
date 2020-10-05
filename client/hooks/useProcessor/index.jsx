@@ -19,16 +19,21 @@ function initial() {
 function reducer(state, action) {
   const { type, payload } = action;
   const { category, name, checked, group } = payload;
-  let nextState, results;
+  let { results } = state;
+  let nextState;
 
   switch (type) {
     case 'init':
-      nextState = { ...initial(), ...payload };
+      nextState = { ...initial(), ...payload, results: undefined };
       nextState.selectedGroup.forEach((group) => nextState.groups.set(group, true));
       break;
     case 'filters':
       state.filters.get(category).set(name, checked);
-      nextState = { filterCategory: category, filterValue: name, filterStatus: checked };
+      nextState = {
+        filterCategory: category,
+        filterValue: name,
+        filterStatus: checked
+      };
       break;
     case 'filters-all':
       state.filters.get(category).forEach((_, val) => state.filters.get(category).set(val, checked));
@@ -49,8 +54,7 @@ function reducer(state, action) {
       nextState = payload;
       break;
     case 'results':
-      results = payload.results;
-      nextState = { filterCategory: null, filterValue: null, filterStatus: null };
+      nextState = { filterCategory: null, filterValue: null, filterStatus: null, ...payload };
       break;
     default:
       throw new Error();
@@ -59,7 +63,6 @@ function reducer(state, action) {
   return {
     ...state,
     ...nextState,
-    results,
     processed: type === 'results',
   }
 }

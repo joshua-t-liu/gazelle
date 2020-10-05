@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { App, GraphContainer, Form } from './styles'
 import Logo from '../Logo';
 import Spinner from '../Spinner';
 import Graph from '../Graph';
@@ -13,6 +12,7 @@ import Layout from '../Layout';
 import useProcessor from '../../hooks/useProcessor';
 import useGraphOpt from '../../hooks/useGraphOpt';
 import useExample from '../../hooks/useExample';
+import { App, GraphContainer, Form } from './styles'
 
 export default () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +43,7 @@ export default () => {
           dataType={state.dataType}
           x={state.x}
           y={state.y}
+          processed={state.processed}
           dispatch={dispatch} />
       </GraphContainer>
       <Form>
