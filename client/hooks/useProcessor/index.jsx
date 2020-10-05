@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useReducer } from 'react';
 
-import { open, read } from '../../IndexedDB';
+import { read } from '../../IndexedDB';
 
 function initial() {
   return ({

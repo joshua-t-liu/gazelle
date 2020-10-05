@@ -4,7 +4,6 @@ function DataSet(groupName, graphType, aggregate, counts, data) {
   this.groupName = groupName;
   this.graphType = graphType;
   this.aggregate = aggregate;
-  // this.accumFun = getAccumFuncs(aggregate);
   this.counts = (counts) ? counts : new Map();
   this.data = (data) ? data : new Map();
 }
@@ -52,22 +51,32 @@ DataSet.prototype.adjustData = function(state, data) {
   if (!data) return;
   if (!data.length) return;
 
+  const { x, y } = state;
+  let adjustment = new Map();
+  let counts = new Map();
+
+  data.forEach((record) => {
+    const { [x]: xVal, [y]: yVal } = record;
+    const xKey = uniqKey(xVal);
+    const currVal = adjustment.get(xKey);
+    const currCount = counts.get(xKey);
+    adjustment.set(xKey, getAccumFuncs(this.aggregate)(currVal, yVal));
+    counts.set(xKey, DataSet.countsFunc(currCount, 1));
+  });
+
   switch (this.aggregate) {
     case 'None':
-      break;
-    case 'Sum':
-      this.adjustSum(state, data);
-      break;
-    case 'Average':
-      // this.data.set(x, currVal + (sign * currVal));
-      break;
-    case 'Count':
+      this.adjustNone(state, adjustment, counts);
       break;
     case 'Min':
       break;
     case 'Max':
       break;
+    case 'Sum':
+    case 'Average':
+    case 'Count':
     default:
+      this.adjustSum(state, adjustment, counts);
       break;
   }
 }
@@ -95,20 +104,40 @@ function getAccumFuncs(aggregate) {
   }
 }
 
-DataSet.prototype.adjustSum = function(state, data) {
-  const { x, y } = state;
+DataSet.prototype.adjustNone = function(state, adjustment, counts) {
   const sign = (-1) ** !state.filterStatus;
-  let adjustment = new Map();
-  let counts = new Map();
 
-  data.forEach((record) => {
-    const { [x]: xVal, [y]: yVal } = record;
-    const xKey = uniqKey(xVal);
-    const currVal = adjustment.get(xKey);
-    const currCount = counts.get(xKey);
-    adjustment.set(xKey, getAccumFuncs(this.aggregate)(currVal, yVal));
-    counts.set(xKey, DataSet.countsFunc(currCount, 1));
+  adjustment.forEach((vals, xKey) => {
+    const currVal = this.data.get(xKey);
+    const currCount = this.counts.get(xKey);
+
+    if (sign) {
+      vals.forEach((val) => this.data.set(xKey, getAccumFuncs(this.aggregate)(currVal, val)));
+    } else {
+      const temp = [...this.data.get(xKey)];
+      const res = [];
+      const counter = new Map();
+      vals.forEach((val) => counter.set(val, counter.get(val) || 0 + 1));
+      this.data.set(xKey, temp.filter((val) => {
+        if (counter.get(val)) {
+          counter.set(val, counter.get(val - 1));
+          return false;
+        }
+        return true;
+      }));
+    }
+
+    this.counts.set(xKey, DataSet.countsFunc(currCount, (sign * counts.get(xKey))));
+
+    if (this.counts.get(xKey) === 0) {
+      this.counts.delete(xKey);
+      this.data.delete(xKey);
+    }
   });
+}
+
+DataSet.prototype.adjustSum = function(state, adjustment, counts) {
+  const sign = (-1) ** !state.filterStatus;
 
   adjustment.forEach((val, xKey) => {
     const currVal = this.data.get(xKey);

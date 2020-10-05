@@ -58,7 +58,7 @@ function processAllCb(record, groupKey, xKey, yVal, state, dataSets) {
 }
 
 function processFilteredDataCb(state, dataSets) {
-  const { filterCategory, filterValue, filterStatus, dataType, selectedGroup, x } = state;
+  const { filterCategory, filterValue, filterStatus, filters, dataType, selectedGroup, x } = state;
 
   let value = filterValue;
 
@@ -71,14 +71,18 @@ function processFilteredDataCb(state, dataSets) {
     .then((results) => {
       const data = new Map();
       const labels = new Set();
+
       //separate by groups
+      const columns = Object.keys(results[0]);
       results.forEach((record) => {
+        if (!columns.every((col) => (col === filterCategory) || checkFilter(filters, record, col) )) return;
         const groupKey = getGroupKey(selectedGroup, record);
         if (!data.get(groupKey)) data.set(groupKey, []);
         data.get(groupKey).push(record);
         const xKey = uniqKey(record[x]);
         labels.add(xKey)
       })
+
       //pass to each group
       dataSets.adjustData(state, data, labels);
     })
@@ -104,6 +108,7 @@ function process(state) {
         updateMultiple(dataSets.datasets, 'datasets'),
         update(dataSets.labels, 'labels'),
       ]);
+
       console.log(new Date() - before);
       resolve(dataSets.getChartJsDataSets());
     })

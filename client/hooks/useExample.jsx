@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { create, update, write } from '../IndexedDB';
+import { create, write } from '../IndexedDB';
 import { preProcess } from './useProcessor/processor';
 
 const getModelSize = (model) => {
