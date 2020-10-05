@@ -32,6 +32,13 @@ DataSets.prototype.addData = function(groupName, x, y) {
   dataset.addData(x, y);
 }
 
+DataSets.prototype.adjustData = function(state, data, labels) {
+  this.datasets.forEach((dataset, groupKey) => {
+    dataset.adjustData(state, data.get(groupKey));
+  });
+  labels.forEach((xKey) => this.labels.add(xKey));
+}
+
 DataSets.prototype.getChartJsDataSets = function() {
   const datasets = this.formatData();
   const labels = this.formatLabels(datasets);

@@ -114,23 +114,45 @@ function update(data, storeName = 'raw', key) {
   })
 }
 
-function updateMultiple(data, storeName) {
+function clear(storeName) {
   return new Promise((resolve, reject) => {
     const txn = db.transaction([storeName], 'readwrite');
-    const objectStore = txn.objectStore(storeName);
+    const store = txn.objectStore(storeName);
 
-    data.forEach((val, key) => {
-      const req = objectStore.put(val, key);
-    })
+    const req = store.clear();
 
-    txn.onerror = function(event) {
-      reject(event.target.errorCode);
+    req.onsuccess = function() {
+      resolve();
     }
 
-    txn.oncomplete = function() {
-      resolve(data);
+    req.onerror = function() {
+      reject();
     }
   })
+}
+
+function updateMultiple(data, storeName) {
+  return (
+    clear(storeName)
+    .then(() => new Promise((resolve, reject) => {
+      const txn = db.transaction([storeName], 'readwrite');
+      const objectStore = txn.objectStore(storeName);
+
+      data.forEach((val, key) => {
+        const req = objectStore.put(val, key);
+      })
+
+      txn.onerror = function(event) {
+        reject(event.target.errorCode);
+      }
+
+      txn.oncomplete = function() {
+        console.log('updated all')
+        resolve(data);
+      }
+    }))
+    .catch((err) => console.log(err))
+  );
 }
 
 function readAll(storeName) {
@@ -161,7 +183,6 @@ function isOpen() {
 
 function getByIndex(storeName, indexName, value) {
   return new Promise((resolve, reject) => {
-    console.log(storeName, indexName, value)
     if (storeName === undefined || indexName === undefined || value === undefined) reject('getByIndex missing paramters');
 
     const txn = db.transaction([storeName], 'readonly');

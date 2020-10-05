@@ -8,22 +8,29 @@ function checkFilter(filters, record, col) {
 
 function filterData(state, datasets) {
   if (state.filterCategory) {
-    processFilteredDataCb(state, datasets);
-    return;
+    return processFilteredDataCb(state, datasets);
   }
 
   const { data, filters, selectedGroup, x, y } = state;
   const columns = Object.keys(data[0]);
 
   data.forEach((record) => {
-    if (!columns.every((col) => checkFilter(filters, record, col))) return;
+    const groupKey = getGroupKey(selectedGroup, record);
 
-    const groupKey = Array.from(selectedGroup).map((val) => record[val]).join(',');
+    if (!columns.every((col) => checkFilter(filters, record, col))) {
+      datasets.getGroup(groupKey);
+      return;
+    };
+
     const { [x]: xVal, [y]: yVal } = record;
     const xKey = uniqKey(xVal);
 
     processAllCb(record, groupKey, xKey, yVal, state, datasets);
   });
+}
+
+function getGroupKey(selectedGroup, record) {
+  return Array.from(selectedGroup).map((val) => record[val]).join(',');
 }
 
 function getDataSets(state) {
@@ -50,8 +57,8 @@ function processAllCb(record, groupKey, xKey, yVal, state, dataSets) {
   dataSets.addData(groupKey, xKey, yVal);
 }
 
-function processFilteredDataCb(state, datasets) {
-  const { filterCategory, filterValue, filterStatus, dataType } = state;
+function processFilteredDataCb(state, dataSets) {
+  const { filterCategory, filterValue, filterStatus, dataType, selectedGroup, x } = state;
 
   let value = filterValue;
 
@@ -59,9 +66,25 @@ function processFilteredDataCb(state, datasets) {
     value = Number(filterValue);
   }
 
-  getByIndex('raw', filterCategory, value)
-  .then((results) => console.log(results))
-  .catch((err) => console.log(err));
+  return new Promise((resolve, reject) => {
+    getByIndex('raw', filterCategory, value)
+    .then((results) => {
+      const data = new Map();
+      const labels = new Set();
+      //separate by groups
+      results.forEach((record) => {
+        const groupKey = getGroupKey(selectedGroup, record);
+        if (!data.get(groupKey)) data.set(groupKey, []);
+        data.get(groupKey).push(record);
+        const xKey = uniqKey(record[x]);
+        labels.add(xKey)
+      })
+      //pass to each group
+      dataSets.adjustData(state, data, labels);
+    })
+    .then(resolve)
+    .catch((err) => reject(err));
+  })
 }
 
 function process(state) {
@@ -81,7 +104,6 @@ function process(state) {
         updateMultiple(dataSets.datasets, 'datasets'),
         update(dataSets.labels, 'labels'),
       ]);
-
       console.log(new Date() - before);
       resolve(dataSets.getChartJsDataSets());
     })
