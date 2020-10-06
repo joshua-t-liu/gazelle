@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useReducer } from 'react';
 
-import { read } from '../../IndexedDB';
+import { read, readAll } from '../../IndexedDB';
 
 function initial() {
   return ({
@@ -76,9 +76,12 @@ export default (setIsLoading) => {
       console.error(event);
     }
     worker.current.onmessage = function(event) {
-      read('processed')
-      .then((results) => {
-        dispatch({ type: 'results', payload: { results } });
+      const before = new Date();
+      // read('processed')
+      Promise.all([readAll('processed-datasets'), read('processed-labels')])
+      .then(([datasets, labels]) => {
+        console.log('read', new Date() - before);
+        dispatch({ type: 'results', payload: { results: { datasets, labels } } });
         setIsLoading(false);
       })
     };

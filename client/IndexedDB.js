@@ -1,6 +1,6 @@
 let db;
 
-const STORES = ['raw', 'processed', 'datasets', 'labels'];
+const STORES = ['raw', 'processed', 'datasets', 'labels', 'processed-datasets', 'processed-labels'];
 
 function open(indices = []) {
   return new Promise((resolve, reject) => {
@@ -27,6 +27,8 @@ function open(indices = []) {
         if (store === 'raw') {
           const objectStore = db.createObjectStore(store, { autoIncrement : true });
           indices.forEach((index) => objectStore.createIndex(index, index, { unique: false }));
+        } else if (store === 'processed-datasets') {
+          const objectStore = db.createObjectStore(store, { autoIncrement : true });
         } else {
           db.createObjectStore(store);
         }
@@ -63,19 +65,23 @@ function create(indices) {
 }
 
 function write(data, storeName = 'raw') {
-  return new Promise((resolve, reject) => {
-    const txn = db.transaction([storeName], 'readwrite');
+  return (
+    clear(storeName)
+    .then(() => new Promise((resolve, reject) => {
+      const txn = db.transaction([storeName], 'readwrite');
 
-    txn.onerror = function(event) {
-      reject(event.target.errorCode);
-    }
+      txn.onerror = function(event) {
+        reject(event.target.errorCode);
+      }
 
-    txn.oncomplete = function(event) {
-      resolve();
-    }
-    const objectStore = txn.objectStore(storeName);
-    data.forEach((dataPt) => objectStore.add(dataPt));
-  })
+      txn.oncomplete = function(event) {
+        resolve();
+      }
+      const objectStore = txn.objectStore(storeName);
+      data.forEach((dataPt) => objectStore.add(dataPt));
+    }))
+    .catch((err) => console.log(err))
+  );
 }
 
 function read(storeName = 'raw', key) {
@@ -147,7 +153,6 @@ function updateMultiple(data, storeName) {
       }
 
       txn.oncomplete = function() {
-        console.log('updated all')
         resolve(data);
       }
     }))

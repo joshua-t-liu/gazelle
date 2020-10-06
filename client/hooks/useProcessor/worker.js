@@ -1,6 +1,6 @@
 import { process } from './processor';
 
-import { open, isOpen, readAll, update } from '../../IndexedDB';
+import { open, isOpen, readAll, update, write } from '../../IndexedDB';
 
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -20,6 +20,10 @@ onmessage = function(event) {
   openDb()
   .then(() => readAll('raw'))
   .then((data) => process({ ...event.data, data }))
-  .then((results) => update(results, 'processed'))
+  // .then((results) => update(results, 'processed'))
+  .then((results) => Promise.all([
+    write(results.datasets, 'processed-datasets'),
+    update(results.labels, 'processed-labels'),
+   ]))
   .then(() => postMessage(null));
 };

@@ -38,7 +38,7 @@ export default ({ height, layoutState, graphType, data, dataType, x, y, processe
           Object.assign(layoutState.legend, legend)
           ));
 
-    } else if (data) {
+    } else if (data && processed) {
       chart.data = copyData(data);
       chart.update(0);
     }
