@@ -5,6 +5,7 @@ import { open, isOpen, readAll, update, write } from '../../IndexedDB';
 function openDb() {
   return new Promise((resolve, reject) => {
     if (self.db && isOpen()) return resolve(self.db);
+    console.log('open from worker')
     open()
     .then((db) => {
       self.db = db;

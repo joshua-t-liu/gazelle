@@ -6,23 +6,23 @@ function open(indices = []) {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open('chartsy', 1);
 
-    req.onerror = function() {
-      reject(event.target.errorCode);
-    }
-
-    req.onsuccess = function(event) {
-      db = event.target.result;
-
-      db.onversionchange = function() {
-        console.log('closed db')
-        db.close();
-      }
-
-      resolve(db);
-    }
+    addEventHandler(
+      req,
+      (event) => {
+        db = event.target.result;
+        db.onversionchange = function() {
+          console.log('closed db')
+          db.close();
+        }
+        resolve(db);
+      },
+      (event) => reject(event.target.errorCode),
+      'open'
+    )
 
     req.onupgradeneeded  = function(event) {
       const db = event.target.result;
+
       STORES.forEach((store) => {
         switch (store) {
           case 'raw':
@@ -49,6 +49,7 @@ function deleteDb() {
       req,
       () => resolve(),
       (event) => reject(event.target.errorCode),
+      'delete'
     );
 
     req.onblocked = function(event) {
@@ -72,6 +73,7 @@ function write(data, storeName = 'raw') {
     clear(storeName)
     .then(() => new Promise((resolve, reject) => {
       const store = getStore({
+        type: 'write',
         name: storeName,
         mode: 'readwrite',
         onerror: (event) => reject(event.target.errorCode),
@@ -86,7 +88,7 @@ function write(data, storeName = 'raw') {
 function read(storeName = 'raw', key) {
   return new Promise((resolve, reject) => {
     if (!key) key = storeName;
-    const store = getStore({ name: storeName });
+    const store = getStore({ type: 'read', name: storeName });
 
     addEventHandler(
       store.get(key),
@@ -100,6 +102,7 @@ function update(data, storeName = 'raw', key) {
 
   return new Promise((resolve, reject) => {
     const store = getStore({
+      type: 'update',
       name: storeName,
       mode: 'readwrite',
       oncomplete: () => resolve(data),
@@ -113,6 +116,7 @@ function update(data, storeName = 'raw', key) {
 function clear(storeName) {
   return new Promise((resolve, reject) => {
     const store = getStore({
+      type: 'clear',
       name: storeName,
       mode: 'readwrite',
       oncomplete: () => resolve(),
@@ -127,6 +131,7 @@ function updateMultiple(data, storeName) {
     clear(storeName)
     .then(() => new Promise((resolve, reject) => {
       const store = getStore({
+        type: 'update-multiple',
         name: storeName,
         mode: 'readwrite',
         oncomplete: () => resolve(data),
@@ -141,7 +146,7 @@ function updateMultiple(data, storeName) {
 
 function readAll(storeName) {
   return new Promise((resolve, reject) => {
-    const store = getStore({ name: storeName });
+    const store = getStore({ type: 'read-all', name: storeName });
 
     addEventHandler(
       store.getAll(),
@@ -152,7 +157,7 @@ function readAll(storeName) {
 
 function isOpen() {
   try {
-    const txn = db.transaction(['data']);
+    const txn = db.transaction(['raw']);
     txn.abort();
     return true;
   } catch (err) {
@@ -164,7 +169,7 @@ function getByIndex(storeName, indexName, value) {
   return new Promise((resolve, reject) => {
     if (storeName === undefined || indexName === undefined || value === undefined) reject('getByIndex missing paramters');
 
-    const store = getStore({ name: storeName })
+    const store = getStore({ type: 'index', name: storeName })
     const index = store.index(indexName);
     const req = index.getAll(value);
 
@@ -175,7 +180,7 @@ function getByIndex(storeName, indexName, value) {
   });
 }
 
-function getStore({ name, mode = 'readonly', oncomplete, onerror }) {
+function getStore({ type, name, mode = 'readonly', oncomplete, onerror }) {
   const txn = db.transaction([name], mode);
   const store = txn.objectStore(name);
 
@@ -187,17 +192,20 @@ function getStore({ name, mode = 'readonly', oncomplete, onerror }) {
     if (onerror) onerror(event);
   }
 
+  // console.log(type);
   return store;
 }
 
-function addEventHandler(req, resolveCb, rejectCb) {
+function addEventHandler(req, resolveCb, rejectCb, type) {
   req.onsuccess = function(event) {
-    resolveCb(event);
+    if (resolveCb) resolveCb(event);
   }
 
   req.onerror = function(event) {
-    rejectCb(event);
+    if (rejectCb) rejectCb(event);
   }
+
+  // if (type) console.log(type);
 }
 
 export {
