@@ -109,7 +109,7 @@ function process(state) {
         update(dataSets.labels, 'labels'),
       ]);
 
-      console.log('write', ew Date() - before);
+      console.log('write', new Date() - before);
       resolve(dataSets.getChartJsDataSets());
     })
     .catch((err) => reject(err));

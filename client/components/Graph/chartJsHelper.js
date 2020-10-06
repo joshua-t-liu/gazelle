@@ -80,12 +80,12 @@ function groupChanged(data1 = [], data2 = []) {
   let count = 0;
 
   for(let i = 0; i < data2.length; i++) {
-    if (data2[i].label !== undefined) groups.add(data2[i].label);
+    if (data2[i] !== undefined) groups.add(data2[i]);
   };
 
   for(let i = 0; i < data1.length; i++) {
-    if (!groups.has(data1[i].label)) return true;
-    groups.delete(data1[i].label);
+    if (!groups.has(data1[i])) return true;
+    groups.delete(data1[i]);
   };
 
   return (groups.size === 0) ? false : true;

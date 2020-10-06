@@ -17,7 +17,12 @@ export default ({ height, layoutState, graphType, data, dataType, x, y, processe
 
     let reset = false;
     if (processed) {
-      reset = groupChanged(chart.data && chart.data.datasets, data && data.datasets);
+      reset = groupChanged(
+        chart.data && chart.data.datasets.map(({ label }) => label),
+        data && data.datasets.map(({ label }) => label));
+      reset = reset || groupChanged(
+        chart.data && chart.data.labels,
+        data && data.labels);
       reset = reset || (chart.config.type !== getChartJsGraphType(graphType) && processed);
     }
     reset = reset || !data || (data && !data.datasets.length);

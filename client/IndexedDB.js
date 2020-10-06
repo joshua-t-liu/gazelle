@@ -1,6 +1,6 @@
-let db;
+import STORES from './stores';
 
-const STORES = ['raw', 'processed', 'datasets', 'labels', 'processed-datasets', 'processed-labels'];
+let db;
 
 function open(indices = []) {
   return new Promise((resolve, reject) => {
@@ -14,6 +14,7 @@ function open(indices = []) {
       db = event.target.result;
 
       db.onversionchange = function() {
+        console.log('closed db')
         db.close();
       }
 
@@ -23,14 +24,17 @@ function open(indices = []) {
     req.onupgradeneeded  = function(event) {
       const db = event.target.result;
       STORES.forEach((store) => {
-
-        if (store === 'raw') {
-          const objectStore = db.createObjectStore(store, { autoIncrement : true });
-          indices.forEach((index) => objectStore.createIndex(index, index, { unique: false }));
-        } else if (store === 'processed-datasets') {
-          const objectStore = db.createObjectStore(store, { autoIncrement : true });
-        } else {
-          db.createObjectStore(store);
+        switch (store) {
+          case 'raw':
+          case 'processed-datasets':
+            const objectStore = db.createObjectStore(store, { autoIncrement : true });
+            if (store === 'raw') {
+              indices.forEach((index) => objectStore.createIndex(index, index, { unique: false }));
+            }
+            break;
+          default:
+            db.createObjectStore(store);
+            break;
         }
       });
     }
@@ -41,16 +45,15 @@ function deleteDb() {
   return new Promise((resolve, reject) => {
     const req = window.indexedDB.deleteDatabase('chartsy');
 
-    req.onerror = function() {
-      reject(event.target.errorCode);
-    }
-
-    req.onsuccess = function(event) {
-      resolve();
-    };
+    addEventHandler(
+      req,
+      () => resolve(),
+      (event) => reject(event.target.errorCode),
+    );
 
     req.onblocked = function(event) {
-      reject();
+      console.log('blocked');
+      resolve();
     };
   })
 }
@@ -68,37 +71,27 @@ function write(data, storeName = 'raw') {
   return (
     clear(storeName)
     .then(() => new Promise((resolve, reject) => {
-      const txn = db.transaction([storeName], 'readwrite');
-
-      txn.onerror = function(event) {
-        reject(event.target.errorCode);
-      }
-
-      txn.oncomplete = function(event) {
-        resolve();
-      }
-      const objectStore = txn.objectStore(storeName);
-      data.forEach((dataPt) => objectStore.add(dataPt));
+      const store = getStore({
+        name: storeName,
+        mode: 'readwrite',
+        onerror: (event) => reject(event.target.errorCode),
+        oncomplete: () => resolve(),
+      });
+      data.forEach((dataPt) => store.add(dataPt));
     }))
     .catch((err) => console.log(err))
   );
 }
 
 function read(storeName = 'raw', key) {
-  if (!key) key = storeName;
-
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName]);
-    const objectStore = transaction.objectStore(storeName);
-    const req = objectStore.get(key);
+    if (!key) key = storeName;
+    const store = getStore({ name: storeName });
 
-    req.onerror = function(event) {
-      reject(event.target.errorCode);
-    }
-
-    req.onsuccess = function(event) {
-      resolve(event.target.result);
-    }
+    addEventHandler(
+      store.get(key),
+      (event) => resolve(event.target.result),
+      (event) => reject(event.target.errorCode));
   })
 }
 
@@ -106,34 +99,26 @@ function update(data, storeName = 'raw', key) {
   if (!key) key = storeName;
 
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName], 'readwrite');
-    const objectStore = transaction.objectStore(storeName);
+    const store = getStore({
+      name: storeName,
+      mode: 'readwrite',
+      oncomplete: () => resolve(data),
+      onerror: (event) => reject(event.target.errorCode)
+    });
 
-    const req = objectStore.put(data, key);
-    req.onerror = function(event) {
-      reject(event.target.errorCode);
-    }
-
-    req.onsuccess = function() {
-      resolve(data);
-    }
+    store.put(data, key);
   })
 }
 
 function clear(storeName) {
   return new Promise((resolve, reject) => {
-    const txn = db.transaction([storeName], 'readwrite');
-    const store = txn.objectStore(storeName);
-
-    const req = store.clear();
-
-    req.onsuccess = function() {
-      resolve();
-    }
-
-    req.onerror = function() {
-      reject();
-    }
+    const store = getStore({
+      name: storeName,
+      mode: 'readwrite',
+      oncomplete: () => resolve(),
+      onerror: (event) =>  reject(event.target.errorCode),
+    });
+    store.clear();
   })
 }
 
@@ -141,20 +126,14 @@ function updateMultiple(data, storeName) {
   return (
     clear(storeName)
     .then(() => new Promise((resolve, reject) => {
-      const txn = db.transaction([storeName], 'readwrite');
-      const objectStore = txn.objectStore(storeName);
+      const store = getStore({
+        name: storeName,
+        mode: 'readwrite',
+        oncomplete: () => resolve(data),
+        onerror: (event) =>  reject(event.target.errorCode),
+      });
 
-      data.forEach((val, key) => {
-        const req = objectStore.put(val, key);
-      })
-
-      txn.onerror = function(event) {
-        reject(event.target.errorCode);
-      }
-
-      txn.oncomplete = function() {
-        resolve(data);
-      }
+      data.forEach((val, key) => store.put(val, key));
     }))
     .catch((err) => console.log(err))
   );
@@ -162,17 +141,12 @@ function updateMultiple(data, storeName) {
 
 function readAll(storeName) {
   return new Promise((resolve, reject) => {
-    const txn = db.transaction([storeName]);
-    const store = txn.objectStore(storeName);
+    const store = getStore({ name: storeName });
 
-    const req = store.getAll();
-    req.onerror = function (event) {
-      reject(event.target.errorCode);
-    }
-
-    req.onsuccess = function(event) {
-      resolve(event.target.result);
-    }
+    addEventHandler(
+      store.getAll(),
+      (event) => resolve(event.target.result),
+      (event) => reject(event.target.errorCode));
   })
 }
 
@@ -190,21 +164,40 @@ function getByIndex(storeName, indexName, value) {
   return new Promise((resolve, reject) => {
     if (storeName === undefined || indexName === undefined || value === undefined) reject('getByIndex missing paramters');
 
-    const txn = db.transaction([storeName], 'readonly');
-    const store = txn.objectStore(storeName);
-
+    const store = getStore({ name: storeName })
     const index = store.index(indexName);
-
     const req = index.getAll(value);
 
-    req.onsuccess = function() {
-      resolve(req.result);
-    }
-
-    req.onerror = function(event) {
-      reject(event.target.errorCode);
-    }
+    addEventHandler(
+      req,
+      (event) => resolve(req.result),
+      (event) => reject(event.target.errorCode));
   });
+}
+
+function getStore({ name, mode = 'readonly', oncomplete, onerror }) {
+  const txn = db.transaction([name], mode);
+  const store = txn.objectStore(name);
+
+  txn.oncomplete = function(event) {
+    if (oncomplete) oncomplete(event);
+  }
+
+  txn.onerror = function(event) {
+    if (onerror) onerror(event);
+  }
+
+  return store;
+}
+
+function addEventHandler(req, resolveCb, rejectCb) {
+  req.onsuccess = function(event) {
+    resolveCb(event);
+  }
+
+  req.onerror = function(event) {
+    rejectCb(event);
+  }
 }
 
 export {

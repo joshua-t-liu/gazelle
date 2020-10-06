@@ -19,7 +19,6 @@ function initial() {
 function reducer(state, action) {
   const { type, payload } = action;
   const { category, name, checked, group } = payload;
-  let { results } = state;
   let nextState;
 
   switch (type) {
@@ -77,7 +76,7 @@ export default (setIsLoading) => {
     }
     worker.current.onmessage = function(event) {
       const before = new Date();
-      // read('processed')
+
       Promise.all([readAll('processed-datasets'), read('processed-labels')])
       .then(([datasets, labels]) => {
         console.log('read', new Date() - before);
