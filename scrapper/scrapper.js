@@ -144,7 +144,7 @@ const getDeviceLinks = async function (page) {
     height: 780,
   });
   // get list of devices
-  // await getDeviceLinks(page);
+  await getDeviceLinks(page);
 
   // pull phone market price
   await pullPrice(page);
