@@ -93,11 +93,11 @@ const pullPrice = async function(page, links) {
   });
   writer.end();
 
-  addPhoneData(row.join(''));
+  // addPhoneData(row.join(''));
 }
 
 const getDeviceLinks = async function (page) {
-  const url = 'https://www.gazelle.com/iphone/';
+  const url = 'https://www.gazelle.com/ipad/';
   await page.goto(url);
   const phones = await page.$$eval('div.transition-container', (divs) => {
     return Array.from(divs[0].children).map((child) => child.children[0].href)
@@ -105,17 +105,22 @@ const getDeviceLinks = async function (page) {
 
   console.log('phones', phones.length);
 
-  let carrierLinks = [];
-  // get list of carriers
-  for (let i=0; i<phones.length; i++) {
-    await page.goto(phones[i]);
-    const carriers = await page.$$eval('ul.level_2', (el) => {
-      return Array.from(el[0].children).map((child) => child.children[0].href);
-    });
-    carrierLinks.push(carriers);
-  };
-
-  carrierLinks = carrierLinks.flat();
+  async function getLevel(from, level = 2) {
+    let results = [];
+    // get list of carriers
+    for (let i=0; i<from.length; i++) {
+      await page.goto(from[i]);
+      const carriers = await page.$$eval(`ul.level_${level}`, (el) => {
+        return Array.from(el[0].children).map((child) => child.children[0].href);
+      });
+      results.push(carriers);
+    };
+    results = results.flat();
+    return results;
+  }
+  const level2 = await getLevel(phones);
+  console.log('level2', level2.length);
+  const carrierLinks = await getLevel(level2, 3);
   console.log('carriers', carrierLinks.length);
 
   // get device links
@@ -144,7 +149,7 @@ const getDeviceLinks = async function (page) {
     height: 780,
   });
   // get list of devices
-  await getDeviceLinks(page);
+  // await getDeviceLinks(page);
 
   // pull phone market price
   await pullPrice(page);
