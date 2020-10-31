@@ -71,13 +71,17 @@ function createChart(ctx, type, data, scales, title, legend) {
       },
       title,
       legend,
+      // parsing: false, // dataset follows ChartJs data structure format
+      // normalized: true, // all datasets have sorted, unique x values
+      // line: {
+      //   tension: 0,
+      // }
     }
   })
 }
 
 function groupChanged(data1 = [], data2 = []) {
   const groups = new Set();
-  let count = 0;
 
   for(let i = 0; i < data2.length; i++) {
     if (data2[i] !== undefined) groups.add(data2[i]);
@@ -95,8 +99,7 @@ function copyData(data) {
   if (!data) return data;
   if (!data.datasets) return data;
 
-  const datasets = [];
-  data.datasets.forEach((dataset) => datasets.push({...dataset }));
+  const datasets = data.datasets.map((dataset) => ({ ...dataset })); 
 
   return { datasets, labels: data.labels };
 }

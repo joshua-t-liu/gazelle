@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 import { Row } from '../Shared';
 import List from '../List';
@@ -31,16 +31,33 @@ export default ({ category, filters, dispatch }) => {
     }
   }
 
-  const values = Array.from(filters.keys());
+  const all = toggle(true);
+  const individual = toggle();
 
-  const list = [{ name:'all', checked: () => allSelected === filters.size, onChange: toggle(true) }]
-  values.forEach((val) => {
-    list.push({
-      name: val,
-      checked: () => filters.get(val),
-      onChange: toggle()
-    })
-  })
+  // const values = Array.from(filters.keys());
+
+  // rerenders and will need to reprocess values
+  // const list = [{ name:'all', checked: () => allSelected === filters.size, onChange: all }]
+  // values.forEach((val) => {
+  //   list.push({
+  //     name: val,
+  //     checked: () => filters.get(val),
+  //     onChange: individual
+  //   })
+  // });
+
+  const list = useMemo(() => {
+    const values = Array.from(filters.keys());
+    const list = [{ name:'all', checked: () => allSelected === filters.size, onChange: all }]
+    values.forEach((val) => {
+      list.push({
+        name: val,
+        checked: () => filters.get(val),
+        onChange: individual
+      })
+    });
+    return list;
+  }, [filters]);
 
   return (
     <Row subheader={category}>

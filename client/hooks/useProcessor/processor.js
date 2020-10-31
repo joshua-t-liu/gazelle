@@ -97,7 +97,7 @@ function process(state) {
   if (!x || !y) return {};
 
   return new Promise((resolve, reject) => {
-    let before = new Date();
+    console.time('write DB');
     let dataSets;
 
     getDataSets(state)
@@ -109,7 +109,7 @@ function process(state) {
         update(dataSets.labels, 'labels'),
       ]);
 
-      console.log('write', new Date() - before);
+      console.timeEnd('write DB');
       resolve(dataSets.getChartJsDataSets());
     })
     .catch((err) => reject(err));
