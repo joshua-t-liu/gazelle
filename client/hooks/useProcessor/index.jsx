@@ -21,6 +21,8 @@ function reducer(state, action) {
   const { category, name, checked, group } = payload;
   let nextState;
 
+  console.time('reducer');
+
   switch (type) {
     case 'init':
       nextState = { ...initial(), ...payload, results: undefined };
@@ -59,6 +61,8 @@ function reducer(state, action) {
       throw new Error();
   }
 
+  console.timeEnd('reducer');
+
   return {
     ...state,
     ...nextState,
@@ -68,27 +72,32 @@ function reducer(state, action) {
 
 export default (setIsLoading) => {
   const [state, dispatch] = useReducer(reducer, null, initial);
-  const worker = useRef(new Worker('worker.js'));
+  // const worker = useRef(new Worker('worker.js'));
+  const worker = useRef(null);
 
   useEffect(() => {
+    worker.current = new Worker('worker.js');
+
     worker.current.onerror = function(event) {
       console.error(event);
     }
     worker.current.onmessage = function(event) {
-      const before = new Date();
+      console.time('read DB');
 
       Promise.all([readAll('processed-datasets'), read('processed-labels')])
       .then(([datasets, labels]) => {
-        console.log('read', new Date() - before);
+        console.timeEnd('read DB');
         dispatch({ type: 'results', payload: { results: { datasets, labels } } });
         setIsLoading(false);
-      })
+      });
+      
     };
   }, []);
 
   useEffect(() => {
     if (!state.processed && state.x && state.y) {
       setIsLoading(true);
+      console.log(state)
       worker.current.postMessage(state);
     }
   }, [state]);

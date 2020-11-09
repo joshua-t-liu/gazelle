@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Chart from 'chart.js';
 import { Graph } from './styles';
-import { createChart, getChartJsGraphType, getChartJsScales, getChartJsDataType, showLegend, groupChanged, copyData } from './chartJSHelper';
+import { createChart, getChartJsGraphType, getChartJsScales, getChartJsDataType, showLegend, groupChanged, copyData } from './chartJsHelper';
 
 export default ({ height, layoutState, graphType, data, dataType, x, y, processed, dispatch }) => {
   const [chart, setChart] = useState(null);

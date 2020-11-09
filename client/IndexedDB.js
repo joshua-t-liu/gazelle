@@ -73,7 +73,6 @@ function write(data, storeName = 'raw') {
     clear(storeName)
     .then(() => new Promise((resolve, reject) => {
       const store = getStore({
-        type: 'write',
         name: storeName,
         mode: 'readwrite',
         onerror: (event) => reject(event.target.errorCode),
@@ -88,7 +87,7 @@ function write(data, storeName = 'raw') {
 function read(storeName = 'raw', key) {
   return new Promise((resolve, reject) => {
     if (!key) key = storeName;
-    const store = getStore({ type: 'read', name: storeName });
+    const store = getStore({ name: storeName });
 
     addEventHandler(
       store.get(key),
@@ -116,7 +115,6 @@ function update(data, storeName = 'raw', key) {
 function clear(storeName) {
   return new Promise((resolve, reject) => {
     const store = getStore({
-      type: 'clear',
       name: storeName,
       mode: 'readwrite',
       oncomplete: () => resolve(),
@@ -131,7 +129,6 @@ function updateMultiple(data, storeName) {
     clear(storeName)
     .then(() => new Promise((resolve, reject) => {
       const store = getStore({
-        type: 'update-multiple',
         name: storeName,
         mode: 'readwrite',
         oncomplete: () => resolve(data),
@@ -146,7 +143,7 @@ function updateMultiple(data, storeName) {
 
 function readAll(storeName) {
   return new Promise((resolve, reject) => {
-    const store = getStore({ type: 'read-all', name: storeName });
+    const store = getStore({ name: storeName });
 
     addEventHandler(
       store.getAll(),
@@ -169,7 +166,7 @@ function getByIndex(storeName, indexName, value) {
   return new Promise((resolve, reject) => {
     if (storeName === undefined || indexName === undefined || value === undefined) reject('getByIndex missing paramters');
 
-    const store = getStore({ type: 'index', name: storeName })
+    const store = getStore({ name: storeName })
     const index = store.index(indexName);
     const req = index.getAll(value);
 
@@ -180,7 +177,7 @@ function getByIndex(storeName, indexName, value) {
   });
 }
 
-function getStore({ type, name, mode = 'readonly', oncomplete, onerror }) {
+function getStore({ name, mode = 'readonly', oncomplete, onerror }) {
   const txn = db.transaction([name], mode);
   const store = txn.objectStore(name);
 
@@ -191,8 +188,6 @@ function getStore({ type, name, mode = 'readonly', oncomplete, onerror }) {
   txn.onerror = function(event) {
     if (onerror) onerror(event);
   }
-
-  // console.log(type);
   return store;
 }
 
@@ -204,8 +199,6 @@ function addEventHandler(req, resolveCb, rejectCb, type) {
   req.onerror = function(event) {
     if (rejectCb) rejectCb(event);
   }
-
-  // if (type) console.log(type);
 }
 
 export {
