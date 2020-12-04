@@ -87,17 +87,18 @@ export default (setIsLoading) => {
       Promise.all([readAll('processed-datasets'), read('processed-labels')])
       .then(([datasets, labels]) => {
         console.timeEnd('read DB');
+        console.timeEnd('worker');
         dispatch({ type: 'results', payload: { results: { datasets, labels } } });
         setIsLoading(false);
       });
-      
+
     };
   }, []);
 
   useEffect(() => {
     if (!state.processed && state.x && state.y) {
       setIsLoading(true);
-      console.log(state)
+      console.time('worker');
       worker.current.postMessage(state);
     }
   }, [state]);

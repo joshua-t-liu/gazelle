@@ -21,7 +21,7 @@ export default () => {
   const [layoutState, dispatchLayout] = useGraphOpt();
   const ref = useRef(null);
 
-  // useExample((payload) => dispatch({ type: 'init', payload }));
+  useExample((payload) => dispatch({ type: 'init', payload }));
 
   useEffect(() => {
     setOffsetHeight(ref.current.offsetHeight)
