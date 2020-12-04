@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
-const createPhone = require('./Tablet.js');
+const createPhone = require('./Phone.js');
 const { addPhoneData } = require('../db');
 
 const pullPrice = async function(page, links) {
@@ -11,7 +11,7 @@ const pullPrice = async function(page, links) {
 
   if (!deviceLinks) {
     deviceLinks = [];
-    let links = await fsPromises.readFile('./results/tablets.csv', { encoding: 'utf8' });
+    let links = await fsPromises.readFile('./results/devices.csv', { encoding: 'utf8' });
     links = links.split('\n');
     links.forEach((link, idx) => {
       if (link.length) {
@@ -97,7 +97,7 @@ const pullPrice = async function(page, links) {
 }
 
 const getDeviceLinks = async function (page) {
-  const url = 'https://www.gazelle.com/ipad/';
+  const url = 'https://www.gazelle.com/iphone/';
   await page.goto(url);
   const phones = await page.$$eval('div.transition-container', (divs) => {
     return Array.from(divs[0].children).map((child) => child.children[0].href)
@@ -118,10 +118,10 @@ const getDeviceLinks = async function (page) {
     results = results.flat();
     return results;
   }
-  const level2 = await getLevel(phones);
-  console.log('level2', level2.length);
-  const carrierLinks = await getLevel(level2, 3);
-  console.log('carriers', carrierLinks.length);
+  const carrierLinks = await getLevel(phones);
+  console.log('level2', carrierLinks);
+  //const carrierLinks = await getLevel(level2, 3);
+  //console.log('carriers', carrierLinks.length);
 
   // get device links
   let deviceLinks = [];
@@ -136,7 +136,7 @@ const getDeviceLinks = async function (page) {
   deviceLinks = deviceLinks.flat();
   console.log('devices', deviceLinks.length);
 
-  let writer = new fs.WriteStream('./results/tablets.csv');
+  let writer = new fs.WriteStream('./results/devices.csv');
   deviceLinks.forEach((device) => writer.write(device + '\n'));
   writer.end();
 };
@@ -149,7 +149,7 @@ const getDeviceLinks = async function (page) {
     height: 780,
   });
   // get list of devices
-  // await getDeviceLinks(page);
+  await getDeviceLinks(page);
 
   // pull phone market price
   await pullPrice(page);
